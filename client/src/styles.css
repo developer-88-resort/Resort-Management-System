@@ -1308,5 +1308,6 @@ button { font: inherit; cursor: pointer; }
 .bell-item.warn .bell-dot { background: var(--amber); }
 .bell-item.success .bell-dot { background: var(--green); }
 
-/* Sign-in page: messages sit centred above the sign-in card instead of floating in the corner. */
-.toasts.center { top: 24px; left: 50%; right: auto; transform: translateX(-50%); align-items: center; }
+/* Sign-in page: notice shown inside the card, in the same style family as the error box. */
+.signin-notice { border-left: 4px solid var(--teal); background: var(--teal-soft); color: #1d4f4a; padding: 10px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+.signin-notice.error { border-left-color: var(--amber); background: var(--gold-soft); color: #7a5410; }

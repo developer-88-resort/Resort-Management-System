@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { useAuth } from './auth.jsx';
+import { NOTICE, useAuth } from './auth.jsx';
 import { ErrorBox, Field } from './components/ui.jsx';
 import SignInLayout from './components/SignInLayout.jsx';
 import { ConfirmHost, NotificationBell, Toaster } from './components/notify.jsx';
@@ -70,8 +70,13 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState(null);
   const [busy, setBusy] = useState(false);
+  // "You have signed out" / "Your session has ended" appear inside the card, above the form.
+  const readNotice = () => { try { const n = JSON.parse(sessionStorage.getItem(NOTICE) || 'null'); sessionStorage.removeItem(NOTICE); return n; } catch { return null; } };
+  const [notice, setNotice] = useState(readNotice);
+  useEffect(() => { const on = () => setNotice(readNotice()); window.addEventListener('irms:notice', on); return () => window.removeEventListener('irms:notice', on); }, []);
   const submit = async (e) => {
     e.preventDefault();
+    setNotice(null);
     setBusy(true); setErr(null);
     try { await login(u, p); } catch (x) { setErr(x); } finally { setBusy(false); }
   };
@@ -80,6 +85,7 @@ function Login() {
       <form className="card" onSubmit={submit}>
         <div className="signin-form-heading"><span className="signin-form-icon" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10" width="14" height="11" rx="3" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></svg></span><h1>Sign in</h1></div>
         <div className="stack" style={{ padding: 24 }}>
+          {notice && <div className={`signin-notice ${notice.type}`} role="status">{notice.message}</div>}
           <Field label="Username"><input placeholder="Enter your username" value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username" /></Field>
           <div className="field signin-password-field">
             <label htmlFor="signin-password">Password</label>
@@ -139,9 +145,9 @@ function Shell({ children }) {
 
 export default function App() {
   const { loading, user } = useAuth();
-  if (loading) return <><Toaster placement="center" /><ConfirmHost /><div style={{ padding: 40 }}>Loading…</div></>;
+  if (loading) return <><Toaster /><ConfirmHost /><div style={{ padding: 40 }}>Loading…</div></>;
   // Toaster and ConfirmHost stay mounted across sign-in and sign-out so those messages are seen.
-  if (!user) return <><Toaster placement="center" /><ConfirmHost /><Login /></>;
+  if (!user) return <><Toaster /><ConfirmHost /><Login /></>;
   return (
     <><Toaster /><ConfirmHost /><Shell>
       <Routes>

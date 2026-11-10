@@ -2,6 +2,12 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { api, getToken, setToken } from './api.js';
 
 const notify = (message, type = 'success') => window.dispatchEvent(new CustomEvent('irms:toast', { detail: { message, type } }));
+/** Messages for the sign-in page are shown inside the sign-in card, not as a floating toast. */
+export const NOTICE = 'irms.notice';
+const signInNotice = (message, type) => {
+  try { sessionStorage.setItem(NOTICE, JSON.stringify({ message, type })); } catch { /* ignore */ }
+  window.dispatchEvent(new Event('irms:notice'));
+};
 const firstName = (u) => u.full_name.split(' ')[0];
 // sessionStorage survives a page refresh but is cleared when the tab or browser is closed,
 // so "Welcome back" shows once per opening of the system, not on every refresh.
@@ -29,7 +35,7 @@ export function AuthProvider({ children }) {
     const out = () => {
       setState({ loading: false, user: null, perms: [], settings: {} });
       markGreeted(false);
-      notify('Your session has ended. Please sign in again.', 'error');
+      signInNotice('Your session has ended. Please sign in again.', 'error');
     };
     window.addEventListener('irms:logout', out);
     return () => window.removeEventListener('irms:logout', out);
@@ -47,7 +53,7 @@ export function AuthProvider({ children }) {
     setToken(null);
     setState({ loading: false, user: null, perms: [], settings: {} });
     markGreeted(false);
-    notify('You have signed out.', 'info');
+    signInNotice('You have signed out.', 'info');
   };
   const can = (p) => state.perms.includes(p);
   return <Ctx.Provider value={{ ...state, login, logout, can, refresh }}>{children}</Ctx.Provider>;
