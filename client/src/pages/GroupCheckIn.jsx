@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { ApprovalFields, Badge, ErrorBox, Field, Modal, Open, Panel, Proposed, ReasonModal, TenderEntry, useAction, useLoad } from '../components/ui.jsx';
+import { Icon } from '../components/Design.jsx';
 import { centsToInput, fmtDate, fmtDateTime, localToday, peso, toCents } from '../util.js';
 
 export default function GroupCheckIn() {
@@ -67,9 +68,10 @@ export default function GroupCheckIn() {
   });
 
   return (
-    <div className="stack">
+    <div className="stack group-checkin">
+      <div className="pagehead group-checkin-heading"><h1>{g ? 'Group Check-in' : 'New Group Check-in'}</h1><span className="sp" />{!g && <button className="btn outline" onClick={() => setModal('find')}><Icon name="search" size={17} />Find Advance Booking</button>}</div>
       {g && (
-        <div className="banner">
+        <div className="banner group-status-banner">
           <div><div className="muted small">Group</div><div className="big">{g.reference} · {g.group_name}</div></div>
           <Badge>{g.group_status}</Badge>
           <span style={{ flex: 1 }} />
@@ -89,18 +91,18 @@ export default function GroupCheckIn() {
       )}
       {g?.group_status === 'Checked Out' && <div className="okmsg">Group checked out {fmtDateTime(g.checked_out_at)}. All charges settled and keys returned or cleared.</div>}
 
-      <div className="grid g3">
-        <Panel num={1} title="Group information">
+      <div className="group-checkin-layout">
+        <Panel num={1} title="Group information" className="group-info">
           <div className="stack" style={{ gap: 10 }}>
-            <div className="grid g2" style={{ alignItems: 'end' }}>
+            <div className="grid g2 group-identity-row" style={{ alignItems: 'end' }}>
               <Field label="Group Reference"><input readOnly value={g?.reference || 'DT-____ (auto)'} /></Field>
               <Field label="Booking Type">
                 <div className="seg">{['Walk-in', 'Advance'].map((t) => <button key={t} type="button" disabled={!!g} className={info.booking_type === t ? 'on' : ''} onClick={() => setInfo({ ...info, booking_type: t, arrival_date: t === 'Walk-in' ? localToday() : info.arrival_date })}>{t}</button>)}</div>
               </Field>
             </div>
-            <Field label="Group / Organizer Name"><input value={info.group_name} onChange={(e) => setInfo({ ...info, group_name: e.target.value })} placeholder="GROUP 1 - JAMES BOND" /></Field>
+            <Field label="Group / Organizer Name"><input value={info.group_name} onChange={(e) => setInfo({ ...info, group_name: e.target.value })} placeholder="Group or organizer name" autoComplete="name" /></Field>
             <div className="grid g2">
-              <Field label="Contact Number"><input value={info.contact_no} onChange={(e) => setInfo({ ...info, contact_no: e.target.value })} /></Field>
+              <Field label="Contact Number"><input placeholder="e.g. 0917 000 0000" autoComplete="tel" value={info.contact_no} onChange={(e) => setInfo({ ...info, contact_no: e.target.value })} /></Field>
               <Field label="Arrival Date"><input type="date" value={info.arrival_date} min={localToday()} disabled={info.booking_type === 'Walk-in' || (g && g.group_status !== 'Advance Booking')} onChange={(e) => setInfo({ ...info, arrival_date: e.target.value })} /></Field>
               <Field label="Estimated Guests (booked)"><input type="number" min={0} className="num" value={info.estimated_guests} onChange={(e) => setInfo({ ...info, estimated_guests: e.target.value })} /></Field>
               <Field label="Actual Guests (counted)"><input readOnly className="num watch" value={persons} /></Field>
@@ -108,42 +110,41 @@ export default function GroupCheckIn() {
             <Field label="Rate Basis"><select value={info.rate_basis} disabled={g && g.group_status !== 'Advance Booking'} onChange={(e) => setInfo({ ...info, rate_basis: e.target.value })}>{(settings.daytour_rate_bases || []).map((x) => <option key={x}>{x}</option>)}</select></Field>
             <Field label="Agreement / Approval Reference" hint={<Open id="OD-07, 08" />}><input value={info.agreement_ref} onChange={(e) => setInfo({ ...info, agreement_ref: e.target.value })} placeholder={special ? 'Required for special rate' : 'Optional'} /></Field>
             <Field label="Payment Terms"><select value={info.payment_terms} onChange={(e) => setInfo({ ...info, payment_terms: e.target.value })}>{(settings.daytour_payment_terms || []).map((x) => <option key={x}>{x}</option>)}</select></Field>
-            <div className="row">
+            <div className="row group-save-actions">
               <button className="btn outline" disabled={a.busy || (g && !['Advance Booking', 'Arrived / Active', 'Settling'].includes(g.group_status))} onClick={saveGroup}>{g ? 'Save Group' : info.booking_type === 'Advance' ? 'Save Advance Booking' : 'Save Group'}</button>
-              {!g && <button className="btn outline" onClick={() => setModal('find')}>Find Advance Booking</button>}
               {g?.group_status === 'Advance Booking' && <button className="btn danger" onClick={() => setModal('cancel')}>Cancel booking</button>}
             </div>
-            <p className="small muted">The estimate is kept; actual counts are recorded separately. Special rates need authorization; approval and tax-withholding details are stored apart <Open id="OD-07" />.</p>
+            <p className="small muted">Estimates and actual counts are separate. Special rates require approval; tax-withholding details are stored separately <Open id="OD-07" />.</p>
           </div>
         </Panel>
 
-        <div className="stack span2">
-          <Panel num={2} title="Guest counts and entrance">
-            <table className="tbl">
+        <div className="stack group-operations">
+          <Panel num={2} title="Guest counts and entrance" className="group-entrance" right={<span className="group-guest-count"><Icon name="people" size={15} />{persons} guests</span>}>
+            <div className="tablewrap"><table className="tbl group-count-table">
               <thead><tr><th>Category</th><th style={{ width: 110 }}>Count</th><th className="right" style={{ width: 140 }}>Rate</th><th className="right">Amount</th></tr></thead>
               <tbody>
                 {guestRates.map((r) => (
-                  <tr key={r.code}><td>{r.name}{!r.counts_as_person && <span className="small muted"> (not counted as guest)</span>}</td>
-                    <td><input type="number" min={0} className="num" disabled={!editableCounts} value={counts[r.code] ?? ''} onChange={(e) => setCounts({ ...counts, [r.code]: e.target.value })} /></td>
+                  <tr key={r.code}><td><div className="entrance-category"><span className="entrance-category-icon"><Icon name={r.counts_as_person ? 'people' : 'sun'} size={19} /></span><div><strong>{r.name}</strong>{!r.counts_as_person && <span className="small muted">Not counted as guest</span>}</div></div></td>
+                    <td><input type="number" min={0} aria-label={`Count for ${r.name}`} placeholder="0" className="num" disabled={!editableCounts} value={counts[r.code] ?? ''} onChange={(e) => setCounts({ ...counts, [r.code]: e.target.value })} /></td>
                     <td className="num">{special && editableCounts
-                      ? <input className="num" placeholder={centsToInput(r.amount)} value={overrides[r.code] ?? ''} onChange={(e) => setOverrides({ ...overrides, [r.code]: e.target.value })} />
-                      : peso(rateOf(r))}</td>
+                      ? <input aria-label={`Rate for ${r.name}`} className="num" placeholder={centsToInput(r.amount)} value={overrides[r.code] ?? ''} onChange={(e) => setOverrides({ ...overrides, [r.code]: e.target.value })} />
+                      : <span className="entrance-rate">{peso(rateOf(r))}</span>}</td>
                     <td className="num">{peso((Number(counts[r.code]) || 0) * rateOf(r))}</td></tr>
                 ))}
                 <tr className="total"><td>Actual guests (persons)</td><td className="num">{persons}</td><td /><td className="num">{peso(entrance)}</td></tr>
               </tbody>
-            </table>
-            <p className="open small">Senior / PWD: ID check required to claim a discount; the amount is calculated by the approved formula, not shown here (OD-09, 10, 12).</p>
-            <div className="row">
+            </table></div>
+            <p className="open small entrance-discount-note">Senior / PWD: ID check required to claim a discount; the amount is calculated by the approved formula, not shown here (OD-09, 10, 12).</p>
+            <div className="row entrance-actions">
               <span className="small muted" style={{ flex: 1 }}>Rates come from the configured table (effective date, reason, approver). {special && 'Special-rate overrides need supervisor approval.'}</span>
-              {editableCounts && can('daytour') && <button className="btn" disabled={a.busy || !canActivate || !persons || !info.group_name} onClick={activate}>{!g || g.group_status === 'Advance Booking' ? 'Activate Group' : 'Update counts'}</button>}
+              {editableCounts && can('daytour') && <button className="btn gold" disabled={a.busy || !canActivate || !persons || !info.group_name} onClick={activate}>{!g || g.group_status === 'Advance Booking' ? 'Activate Group' : 'Update counts'}</button>}
             </div>
             {!canActivate && g?.group_status === 'Advance Booking' && <p className="small open">This group can be activated on {fmtDate(g.arrival_date)}.</p>}
           </Panel>
 
           {g && (
-            <div className="grid g2">
-              <Panel num={3} title="Facility charges">
+            <div className="grid g2 group-financials">
+              <Panel num={3} title="Facility charges" className="group-facilities">
                 <table className="tbl"><thead><tr><th>Item</th><th className="right">Qty</th><th className="right">Rate</th><th className="right">Amount</th><th /></tr></thead>
                   <tbody>
                     {d.charges.filter((c) => c.kind === 'facility' || c.reverses_id).map((c) => {
@@ -163,14 +164,14 @@ export default function GroupCheckIn() {
                 )}
                 <p className="small muted">A charge item, not a guest category. Not discountable until confirmed <Open id="OD-06" />.</p>
               </Panel>
-              <Panel num={4} title="Charges and payment">
+              <Panel num={4} title="Charges and payment" className="group-payment">
                 <div className="kv">
                   <span>Entrance subtotal</span><span>{peso(d.totals.entrance)}</span>
                   <span>Facility subtotal</span><span>{peso(d.totals.facility)}</span>
                   {d.totals.groupDept > 0 && <><span>Group restaurant bills</span><span>{peso(d.totals.groupDept)}</span></>}
                   <b>TOTAL DUE (group account)</b><b>{peso(d.totals.entryCharges + d.totals.groupDept + d.totals.otherGroup)}</b>
                   <span>Paid to date</span><span>{peso(d.totals.groupPaid)}</span>
-                  <b>Balance</b><b>{peso(d.totals.groupAccountBalance)}</b>
+                  <b className="group-balance-label">Balance</b><b className="watch group-balance-value">{peso(d.totals.groupAccountBalance)}</b>
                 </div>
                 <div className="hr" />
                 {g.group_status === 'Advance Booking' && d.advance && (
@@ -210,7 +211,7 @@ export default function GroupCheckIn() {
       </div>
       <ErrorBox error={a.error} />
       {g && (
-        <div className="actionbar">
+        <div className="actionbar group-locker-action">
           <span className="small">{d.gates.canIssueKeys ? '☑ Entry charges paid' : '☐ Entry charges not yet paid'}</span>
           <span className="small muted">Continue is locked while any required entry charge is unpaid. <Proposed /></span>
           <span className="sp" />
