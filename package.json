@@ -1,0 +1,33 @@
+{
+  "name": "88hotspring-irms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "88 Hotspring Resort - Integrated Resort Management System (Phase 1 Front Office + Phase 2 Day Tour + department charge bridge)",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "node --watch server/index.js",
+    "dev:web": "vite",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "test": "node --test server/tests/flows.test.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "vite": "^5.4.11"
+  },
+  "overrides": {
+    "rollup": "npm:@rollup/wasm-node@^4.24.0",
+    "esbuild": "npm:esbuild-wasm@0.21.5"
+  }
+}
