@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { Badge, ErrorBox, Field, Modal, Open, ReasonModal, useAction, useLoad } from '../components/ui.jsx';
+import { Icon } from '../components/Design.jsx';
 import { fmtDate, fmtDateTime } from '../util.js';
 
 const NEXT = { Dirty: 'Cleaning In Progress', 'Cleaning In Progress': 'For Inspection', 'For Inspection': 'Clean' };
@@ -28,33 +29,39 @@ export default function RoomBoard() {
   const after = async () => { await reload(); await reloadDefects(); };
 
   return (
-    <div className="stack">
-      <div className="pagehead">
+    <div className="stack room-workspace">
+      <div className="pagehead room-board-heading">
         <h1>Room Board</h1>
-        <span className="muted small">Inspection rule: {rules === 'all' ? 'every turnover' : 'defect / repair rooms only'} <Open id="OD-04" /></span>
         <span className="sp" />
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ width: 'auto' }}>
+        <label className="room-board-filter"><span>Show</span><select aria-label="Filter rooms by status" value={filter} onChange={(e) => setFilter(e.target.value)} style={{ width: 'auto' }}>
           <option value="">All rooms ({d.rooms.length})</option>
           {['Dirty', 'Cleaning In Progress', 'For Inspection', 'Clean'].map((s) => <option key={s} value={s}>HK: {s} ({counts[s] || 0})</option>)}
           {['Available', 'Occupied', 'Reserved / Blocked', 'Not Ready', 'Under Repair / Blocked'].map((s) => <option key={s} value={s}>Availability: {s} ({counts[s] || 0})</option>)}
-        </select>
+        </select></label>
       </div>
+      <div className="room-board-summary" aria-label="Housekeeping summary">{[
+        { status: 'Clean', icon: 'sparkle', tone: 'clean' },
+        { status: 'Dirty', icon: 'bed', tone: 'dirty' },
+        { status: 'Cleaning In Progress', icon: 'sun', tone: 'cleaning' },
+        { status: 'For Inspection', icon: 'search', tone: 'inspection' },
+      ].map((item) => <div key={item.status} className={`room-summary-stat ${item.tone}`}><span className="room-summary-stat-icon"><Icon name={item.icon} size={21} /></span><div><span>{item.status}</span><strong>{counts[item.status] || 0}</strong></div></div>)}</div>
+      <div className="room-board-context"><span className="room-board-visible">{rooms.length} of {d.rooms.length} rooms</span><span className="room-inspection-rule"><Icon name="search" size={14} />Inspection rule: {rules === 'all' ? 'every turnover' : 'defect / repair rooms only'} <Open id="OD-04" /></span></div>
       <ErrorBox error={a.error} />
-      <div className="board">
+      <div className="board room-board-grid">
         {rooms.map((r) => {
           const next = NEXT[r.hk_status];
           const needsSup = next === 'Clean' && (rules === 'all' || r.needs_inspection);
           const skipInspection = r.hk_status === 'Cleaning In Progress' && !(rules === 'all' || r.needs_inspection);
           return (
             <div key={r.id} className={`roomcard ${r.hk_status.split(' ')[0]} ${r.hk_status === 'For Inspection' ? 'Inspection' : ''}`}>
-              <div className="row" style={{ justifyContent: 'space-between' }}><span className="no">{r.room_no}</span><span className="small muted">{r.category}</span></div>
-              <div className="row" style={{ gap: 4 }}><span className="small muted" style={{ width: 82 }}>Housekeeping</span><Badge>{r.hk_status}</Badge></div>
-              <div className="row" style={{ gap: 4 }}><span className="small muted" style={{ width: 82 }}>Availability</span><Badge>{r.availability}</Badge></div>
-              {r.occupant && <div className="small">In-house: <Link to={`/reservations/${r.occupant.reservation_id}`}>{r.occupant.full_name}</Link> until {fmtDate(r.occupant.check_out)}</div>}
-              {!r.occupant && r.next_arrival && <div className="small muted">Next: {r.next_arrival.full_name} {fmtDate(r.next_arrival.check_in)}</div>}
+              <div className="room-card-heading"><span className="room-card-icon"><Icon name="bed" size={23} /></span><div><span className="no">{r.room_no}</span><span className="room-card-category">{r.category}</span></div></div>
+              <div className="room-card-status"><span>Housekeeping</span><Badge>{r.hk_status}</Badge></div>
+              <div className="room-card-status"><span>Availability</span><Badge>{r.availability}</Badge></div>
+              {r.occupant && <div className="small room-guest-detail">In-house: <Link to={`/reservations/${r.occupant.reservation_id}`}>{r.occupant.full_name}</Link> until {fmtDate(r.occupant.check_out)}</div>}
+              {!r.occupant && r.next_arrival && <div className="small muted room-guest-detail">Next: {r.next_arrival.full_name} {fmtDate(r.next_arrival.check_in)}</div>}
               {r.open_defects.map((x) => <div key={x.id} className="small" style={{ color: 'var(--red)' }}>⚠ {x.note}</div>)}
               {r.block_reason && <div className="small" style={{ color: 'var(--red)' }}>Blocked: {r.block_reason}</div>}
-              <div className="row" style={{ gap: 4, marginTop: 'auto' }}>
+              <div className="row room-card-actions" style={{ gap: 4, marginTop: 'auto' }}>
                 {canHK && skipInspection && <button className="btn sm" onClick={() => set(r, 'Clean')}>Mark Clean</button>}
                 {canHK && next && !skipInspection && (!needsSup || sup) && <button className="btn sm" onClick={() => set(r, next)}>{next === 'Clean' ? 'Pass inspection' : next}</button>}
                 {canHK && next && needsSup && !sup && <span className="small open">Awaiting supervisor</span>}
@@ -67,23 +74,27 @@ export default function RoomBoard() {
           );
         })}
       </div>
+      {!rooms.length && <div className="panel room-board-empty">No rooms match this status.</div>}
 
-      <div className="panel">
-        <h3>Front Office events (last 24 hours)</h3>
+      <div className="room-board-logs">
+      <div className="panel room-events">
+        <div className="room-log-heading"><Icon name="calendar" size={18} /><h2>Front Office events</h2><span>Last 24 hours</span></div>
         <table className="tbl"><thead><tr><th>When</th><th>Event</th><th>Room</th><th>Detail</th><th>By</th></tr></thead>
           <tbody>{(d.events || []).map((e, i) => (
             <tr key={i}><td className="small nowrap">{fmtDateTime(e.at)}</td><td><Badge t={e.label === 'Check-out' ? 'red' : e.label === 'Check-in' ? 'navy' : 'amber'}>{e.label}</Badge></td><td><b>{e.room || '-'}</b></td><td className="small">{e.detail}</td><td className="small">{e.by}</td></tr>
           ))}{!d.events?.length && <tr><td colSpan={5} className="muted">No events.</td></tr>}</tbody></table>
         <p className="small muted">Check-in and check-out events reach Housekeeping here. Front Office still confirms readiness with Housekeeping directly until management approves removing that step.</p>
       </div>
-      <div className="panel">
-        <h3>Unresolved room defects</h3>
+      <div className="panel room-defects">
+        <div className="room-log-heading"><Icon name="door" size={18} /><h2>Unresolved room defects</h2></div>
         <table className="tbl"><thead><tr><th>Room</th><th>Defect</th><th>Source</th><th>Reported</th><th /></tr></thead>
           <tbody>{(defects?.defects || []).map((x) => (
             <tr key={x.id}><td><b>{x.room_no}</b></td><td>{x.note}</td><td className="small">{x.source}</td><td className="small">{x.reported_by} {fmtDateTime(x.reported_at)}</td>
               <td>{canHK && <button className="linkbtn" onClick={() => setModal({ resolve: x })}>resolve</button>}</td></tr>
           ))}{defects && !defects.defects.length && <tr><td colSpan={5} className="muted">None.</td></tr>}</tbody></table>
         <p className="small muted">Maintenance is still reached through existing offline channels. Front Office can view defects and blocks here.</p>
+      </div>
+
       </div>
 
       {modal?.defect && <DefectModal room={modal.defect} canBlock={sup} onClose={() => setModal(null)} onDone={after} />}
