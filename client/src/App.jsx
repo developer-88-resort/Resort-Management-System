@@ -139,12 +139,11 @@ function Shell({ children }) {
 
 export default function App() {
   const { loading, user } = useAuth();
-  if (loading) return <div style={{ padding: 40 }}>Loading…</div>;
-  if (!user) return <Login />;
+  if (loading) return <><Toaster /><ConfirmHost /><div style={{ padding: 40 }}>Loading…</div></>;
+  // Toaster and ConfirmHost stay mounted across sign-in and sign-out so those messages are seen.
+  if (!user) return <><Toaster /><ConfirmHost /><Login /></>;
   return (
-    <Shell>
-      <Toaster />
-      <ConfirmHost />
+    <><Toaster /><ConfirmHost /><Shell>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/reservations" element={<Reservations key="all" />} />
@@ -181,6 +180,6 @@ export default function App() {
         <Route path="/reconciliation" element={<Reconciliation />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Shell>
+    </Shell></>
   );
 }

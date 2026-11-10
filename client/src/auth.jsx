@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { api, getToken, setToken } from './api.js';
 
+const notify = (message, type = 'success') => window.dispatchEvent(new CustomEvent('irms:toast', { detail: { message, type } }));
+const firstName = (u) => u.full_name.split(' ')[0];
+
 const Ctx = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -10,13 +13,18 @@ export function AuthProvider({ children }) {
     try {
       const me = await api.get('/auth/me');
       setState({ loading: false, ...me });
+      return me;
     } catch {
       setState({ loading: false, user: null, perms: [], settings: {} });
     }
   }, []);
   useEffect(() => {
-    refresh();
-    const out = () => setState({ loading: false, user: null, perms: [], settings: {} });
+    // Opening the system with a saved session: say who is signed in, so a shared PC is not used under someone else's name.
+    refresh().then((me) => { if (me?.user) notify(`Welcome back, ${firstName(me.user)}. You are still signed in as ${me.user.role_label} (${me.user.username}). Sign out if this is not you.`, 'info'); });
+    const out = () => {
+      setState({ loading: false, user: null, perms: [], settings: {} });
+      notify('Your session has ended. Please sign in again.', 'error');
+    };
     window.addEventListener('irms:logout', out);
     return () => window.removeEventListener('irms:logout', out);
   }, [refresh]);
@@ -24,12 +32,14 @@ export function AuthProvider({ children }) {
   const login = async (username, password) => {
     const { token } = await api.post('/auth/login', { username, password });
     setToken(token);
-    await refresh();
+    const me = await refresh();
+    if (me?.user) notify(`Signed in. Welcome, ${firstName(me.user)} (${me.user.role_label}).`);
   };
   const logout = async () => {
     try { await api.post('/auth/logout'); } catch { /* ignore */ }
     setToken(null);
     setState({ loading: false, user: null, perms: [], settings: {} });
+    notify('You have signed out.', 'info');
   };
   const can = (p) => state.perms.includes(p);
   return <Ctx.Provider value={{ ...state, login, logout, can, refresh }}>{children}</Ctx.Provider>;
