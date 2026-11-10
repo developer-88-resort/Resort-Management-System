@@ -5,7 +5,7 @@ export default function SignInLayout({ children }) {
       <div className="signin-shell">
         <section className="signin-resort" aria-label="88 Hotspring Resort">
           <div className="signin-brand"><span className="signin-monogram">88</span><div><strong>88 Hotspring Resort</strong><span>Integrated Resort Management System</span></div></div>
-          <svg className="signin-landscape" viewBox="0 0 600 660" fill="none" aria-hidden="true">
+          <svg className="signin-landscape" viewBox="0 0 600 660" preserveAspectRatio="xMidYMax slice" fill="none" aria-hidden="true">
             <defs>
               <linearGradient id="signin-sky" x1="300" y1="0" x2="300" y2="660" gradientUnits="userSpaceOnUse"><stop stopColor="#e9efe5" /><stop offset="1" stopColor="#f5f1e5" /></linearGradient>
               <linearGradient id="signin-pool" x1="150" y1="370" x2="430" y2="610" gradientUnits="userSpaceOnUse"><stop stopColor="#82b9ae" /><stop offset="1" stopColor="#397f78" /></linearGradient>
