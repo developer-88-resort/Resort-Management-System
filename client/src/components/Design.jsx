@@ -1,6 +1,7 @@
 /** Decorative icons and summaries only; no workflow or permission logic. */
 export function Icon({ name = 'calendar', size = 20 }) {
   const paths = {
+    print: <><path d="M7 8V3h10v5M7 17H4V9h16v8h-3" /><path d="M7 14h10v7H7zM17 11h.01" /></>,
     search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></>,
     filter: <><path d="M4 7h16M7 12h10M10 17h4" /><circle cx="8" cy="7" r="2" fill="white" /><circle cx="15" cy="12" r="2" fill="white" /></>,
     plus: <path d="M12 5v14M5 12h14" />,
