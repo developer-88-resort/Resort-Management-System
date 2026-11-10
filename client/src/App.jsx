@@ -66,6 +66,7 @@ function Login() {
   const { login } = useAuth();
   const [u, setU] = useState('');
   const [p, setP] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState(null);
   const [busy, setBusy] = useState(false);
   const submit = async (e) => {
@@ -79,7 +80,13 @@ function Login() {
         <div className="signin-form-heading"><span className="signin-form-icon" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10" width="14" height="11" rx="3" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></svg></span><h1>Sign in</h1></div>
         <div className="stack" style={{ padding: 24 }}>
           <Field label="Username"><input placeholder="Enter your username" value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username" /></Field>
-          <Field label="Password"><input type="password" placeholder="Enter your password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></Field>
+          <div className="field signin-password-field">
+            <label htmlFor="signin-password">Password</label>
+            <div className="signin-password-control">
+              <input id="signin-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" />
+              <button type="button" className="signin-password-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-controls="signin-password" aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? 'Hide' : 'Show'}</button>
+            </div>
+          </div>
           <ErrorBox error={err} />
           <button className="btn gold" disabled={busy}>{busy ? 'Signing in...' : 'Sign in'}<span aria-hidden="true">&rarr;</span></button>
         </div>

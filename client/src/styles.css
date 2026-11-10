@@ -1275,3 +1275,13 @@ button { font: inherit; cursor: pointer; }
   .login { padding: 25px; }
   .signin-shell, .signin-resort { min-height: 560px; }
 }
+
+@media screen {
+  .login .signin-password-field > label { color: #607168; font-size: 12px; font-weight: 500; }
+  .signin-password-control { position: relative; }
+  .login .signin-password-control input { padding-right: 70px; }
+  .signin-password-toggle { position: absolute; right: 5px; top: 5px; bottom: 5px; min-width: 56px; padding: 7px 9px; border: 0; border-radius: 6px; color: #416e5e; background: transparent; font-size: 11px; font-weight: 600; }
+  .signin-password-toggle:hover { background: #edf5f0; }
+  .signin-password-toggle:focus-visible { outline: 2px solid var(--teal); outline-offset: 0; }
+  .signin-password-control input::-ms-reveal { display: none; }
+}
