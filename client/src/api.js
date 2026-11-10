@@ -27,7 +27,8 @@ async function request(method, url, body) {
   }
   if (!res.ok) {
     const err = new ApiError(res.status, data);
-    if (res.status !== 401 && !url.startsWith('/auth/')) window.dispatchEvent(new CustomEvent('irms:toast', { detail: { type: 'error', message: err.message, details: err.failures } }));
+    // Only actions pop up an error; a page that fails to load shows its own error box, and background checks stay quiet.
+    if (method !== 'GET' && res.status !== 401 && !url.startsWith('/auth/')) window.dispatchEvent(new CustomEvent('irms:toast', { detail: { type: 'error', message: err.message, details: err.failures } }));
     throw err;
   }
   if (method !== 'GET') {
