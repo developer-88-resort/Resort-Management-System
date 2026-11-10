@@ -76,15 +76,13 @@ export default function ReservationForm() {
   return (
     <div className="booking-form">
       <div className="pagehead booking-heading">
-        <div><div className="eyebrow">FRONT OFFICE / RESERVATIONS</div><h1>{editing ? `Amend reservation ${orig?.reservation.reference || ''}` : 'New Reservation'}</h1><p className="muted">{editing ? 'Update the stay details and review your changes.' : 'A great stay starts with a warm welcome. Let\'s plan the details.'}</p></div>
+        <h1>{editing ? `Amend reservation ${orig?.reservation.reference || ''}` : 'New Reservation'}</h1>
         <span className="sp" />
-        <div className="booking-header-tag"><Icon name="calendar" size={18} /><span>{editing ? 'Manage an existing stay' : 'Create a new stay'}</span></div>
       </div>
       <div className="booking-layout">
       <div className="booking-main">
       <div className="grid g2 booking-details">
         <Panel num={1} title="Guest information" className="booking-guest">
-          <p className="booking-panel-description">Who are we welcoming?</p>
           <div className="stack" style={{ gap: 10 }}>
             <Field label="Primary guest name"><input value={guest.full_name} onChange={(e) => setGuest({ ...guest, full_name: e.target.value })} placeholder="Last name, First name" autoComplete="name" /></Field>
             <Field label="Contact number"><input placeholder="e.g. 0917 000 0000" autoComplete="tel" value={guest.contact_no} onChange={(e) => setGuest({ ...guest, contact_no: e.target.value })} /></Field>
@@ -93,7 +91,6 @@ export default function ReservationForm() {
           </div>
         </Panel>
         <Panel num={2} title="Stay dates" className="booking-dates">
-          <p className="booking-panel-description">Set the dates for your guest's stay.</p>
           <div className="stack" style={{ gap: 10 }}>
             <div className="grid g2">
               <Field label="Check-in date"><input type="date" value={checkIn} disabled={lines.some((l) => l.locked)} onChange={(e) => { setCheckIn(e.target.value); if (checkOut <= e.target.value) setCheckOut(addDays(e.target.value, 1)); }} /></Field>
@@ -108,7 +105,7 @@ export default function ReservationForm() {
       </div>
 
       <Panel num={3} title="Choose your rooms" className="booking-rooms" right={<span className="room-selection-count">{lines.length} selected</span>}>
-        <p className="booking-panel-description">Rooms available for every night of the stay. Click a room to add it. One guest can book several rooms of different categories.</p>
+        <p className="booking-panel-description">Select one or more rooms. Availability covers the full stay.</p>
         <div className="room-selection-legend"><span><i className="available" />Available</span><span><i className="selected" />Selected</span><span><i className="unavailable" />Unavailable</span></div>
         {!avail && <p className="muted">Choose valid dates to see availability.</p>}
         {avail && Object.entries(byCategory).map(([cat, rooms]) => (
@@ -125,7 +122,7 @@ export default function ReservationForm() {
           </div>
         ))}
         {lines.length > 0 && (
-          <div className="booking-selected"><div className="selected-rooms-heading"><h3>Selected rooms & occupants</h3><span>Review rates and guest counts below</span></div><div className="tablewrap">
+          <div className="booking-selected"><div className="selected-rooms-heading"><h3>Selected rooms & occupants</h3></div><div className="tablewrap">
             <table className="tbl">
               <thead><tr><th>Room</th><th>Category</th><th>Rate / night</th><th>Adults</th><th>Children</th><th>Senior</th><th>PWD</th><th className="right">Line total</th><th /></tr></thead>
               <tbody>
@@ -151,7 +148,6 @@ export default function ReservationForm() {
       </div>
       <aside className="booking-aside">
         <Panel num={4} title="Booking summary" className="booking-summary">
-          <div className="summary-stay"><span className="summary-stay-icon"><Icon name="bed" size={23} /></span><div><strong>{lines.length ? `${lines.length} room${lines.length === 1 ? '' : 's'} selected` : 'Your stay at a glance'}</strong><span>{n > 0 ? `${n} night${n === 1 ? '' : 's'}` : 'Choose your stay dates'}</span></div></div>
           {lines.length > 0 && <div className="summary-room-chips">{lines.map((l) => <span key={l.room_id}>{l.room_no}</span>)}</div>}
           <div className="kv summary-breakdown">
             <span>Rooms</span><span>{lines.length}</span>
@@ -159,7 +155,7 @@ export default function ReservationForm() {
             <span>Down payment requested ({settings.down_payment_pct}%)</span><span>{peso(dp)}</span>
             {orig && <><span>Received so far</span><span>{peso(orig.totals.paid)}</span></>}
           </div>
-          <div className="summary-payment watch"><span>Room total</span><strong>{peso(roomTotal)}</strong><span>For the selected stay</span></div>
+          <div className="summary-payment watch"><span>Room total</span><strong>{peso(roomTotal)}</strong></div>
           <p className="small muted summary-policy">Down payment amount and due date follow settings <span className="open">(OD-02)</span>. A booking can be saved with no payment and stays Active / Unpaid.</p>
           {editing && <p className="small muted">No extra deposit is normally asked for a change; the updated balance is settled at check-in (FO-RSV-08).</p>}
         </Panel>

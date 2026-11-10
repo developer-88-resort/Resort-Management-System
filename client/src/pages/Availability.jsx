@@ -13,7 +13,7 @@ export default function Availability() {
   return (
     <div className="availability-workspace">
       <div className="pagehead availability-heading">
-        <div><div className="eyebrow">FRONT OFFICE / ROOM INVENTORY</div><h1>Availability Calendar</h1><p>Every room. Every stay. One clear view of what's ahead.</p></div>
+        <h1>Availability Calendar</h1>
         <span className="sp" />
         <Link className="btn gold availability-create" to="/reservations/new"><Icon name="plus" size={18} />New Reservation</Link>
       </div>
@@ -41,7 +41,7 @@ export default function Availability() {
             <table className="cal availability-grid" style={{ '--calendar-days': d.dates.length }}>
               <caption className="sr-only">Room availability from {d.dates[0]} to {d.dates[d.dates.length - 1]}. Booked cells open the reservation.</caption>
               <colgroup><col className="planner-room-col" />{d.dates.map((x) => <col key={x} />)}</colgroup>
-              <thead><tr><th scope="col" className="planner-corner"><span>Rooms & categories</span><small>Find your next available stay</small></th>{d.dates.map((x) => {
+              <thead><tr><th scope="col" className="planner-corner"><span>Rooms & categories</span></th>{d.dates.map((x) => {
                 const dt = new Date(x + 'T00:00:00');
                 return <th scope="col" key={x} className={`${x === today ? 'is-today' : ''} ${dt.getDay() === 0 || dt.getDay() === 6 ? 'is-weekend' : ''}`} aria-current={x === today ? 'date' : undefined}><span className="planner-weekday">{dt.toLocaleDateString('en-PH', { weekday: 'short' })}</span><span className="planner-day">{dt.getDate()}</span><span className="planner-month">{dt.toLocaleDateString('en-PH', { month: 'short' })}</span></th>;
               })}</tr></thead>
@@ -63,9 +63,8 @@ export default function Availability() {
             {!d.rooms.length && <div className="planner-loading">No rooms to display.</div>}
           </div>
         )}
-        <div className="planner-footer"><span><Icon name="door" size={16} />A saved booking blocks the room even without payment.</span><span><Icon name="arrow" size={15} />Select a booking to view its details</span></div>
+        <div className="planner-footer"><span><Icon name="door" size={16} />A saved booking blocks the room even without payment.</span></div>
       </section>
-      <div className="planner-help">Striped cells show rooms currently blocked or under repair.</div>
     </div>
   );
 }

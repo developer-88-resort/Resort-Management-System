@@ -13,31 +13,26 @@ export default function Dashboard() {
   return (
     <div className="stack dashboard">
       <div className="pagehead dashboard-head">
-        <div><div className="eyebrow">RESORT OVERVIEW</div><h1>Good day, {user.full_name.split(' ')[0]}<span className="greeting-dot">.</span></h1><p className="muted">Here's what's happening at the resort today.</p></div>
+        <div><h1>Good day, {user.full_name.split(' ')[0]}<span className="greeting-dot">.</span></h1></div>
         <span className="sp" /><div className="date-chip"><Icon name="calendar" size={17} />{fmtDate(d.today)}</div>
       </div>
-      <section className="overview-banner">
-        <div className="overview-copy"><span className="eyebrow">YOUR DAILY SNAPSHOT</span><h2>A clear view. A smoother day.</h2><p>Manage stays, welcome guests, and keep every detail in view.</p>
-          <div className="row">
+      <div className="row dashboard-quick-actions">
             {can('reservation.edit') && <Link className="btn gold" to="/reservations/new">New reservation <Icon name="arrow" size={16} /></Link>}
             {can('daytour') && <Link className="btn outline" to="/daytour/new">New Day Tour group <Icon name="arrow" size={16} /></Link>}
-          </div>
-        </div>
-        <div className="overview-art" aria-hidden="true"><span className="art-sun" /><span className="art-hill back" /><span className="art-hill front" /><span className="art-water one" /><span className="art-water two" /><span className="art-water three" /></div>
-      </section>
-      <div className="section-label"><h2>Today's activity</h2><span className="muted small">At a glance</span></div>
+      </div>
+      <div className="section-label"><h2>Today's activity</h2></div>
       <div className="grid g4 metrics-primary">
-        {d.arrivals && <Metric icon="calendar" label="Room arrivals" value={d.arrivals.length} detail="Expected today" />}
-        {d.inhouse != null && <Metric icon="bed" label="Rooms in-house" value={d.inhouse} detail="Current stays" tone="navy" />}
-        <Metric icon="door" label="Rooms available" value={<>{d.rooms.availability.Available || 0}<span className="metric-total"> / {d.rooms.total}</span></>} detail="Available right now" />
-        <Metric icon="sparkle" label="Rooms Dirty" value={d.rooms.hk.Dirty || 0} detail="Awaiting housekeeping" tone="gold" />
+        {d.arrivals && <Metric icon="calendar" label="Room arrivals" value={d.arrivals.length} />}
+        {d.inhouse != null && <Metric icon="bed" label="Rooms in-house" value={d.inhouse} tone="navy" />}
+        <Metric icon="door" label="Rooms available" value={<>{d.rooms.availability.Available || 0}<span className="metric-total"> / {d.rooms.total}</span></>} />
+        <Metric icon="sparkle" label="Rooms Dirty" value={d.rooms.hk.Dirty || 0} tone="gold" />
       </div>
       <div className="grid g3 metrics-secondary">
-        {d.groups && <Metric icon="people" label="Day Tour groups on site" value={d.groups.filter((g) => g.group_status !== 'Advance Booking').length} detail="Today's groups" />}
-        {d.lockers && <Metric icon="locker" label="Lockers issued" value={(d.lockers.Assigned || 0) + (d.lockers.Shared || 0)} detail="Assigned & shared" tone="navy" />}
-        {d.collections_today && <Metric icon="wallet" label="Collected today" value={peso(collected)} detail="Across all payment methods" tone="gold" />}
+        {d.groups && <Metric icon="people" label="Day Tour groups on site" value={d.groups.filter((g) => g.group_status !== 'Advance Booking').length} />}
+        {d.lockers && <Metric icon="locker" label="Lockers issued" value={(d.lockers.Assigned || 0) + (d.lockers.Shared || 0)} tone="navy" />}
+        {d.collections_today && <Metric icon="wallet" label="Collected today" value={peso(collected)} tone="gold" />}
       </div>
-      <div className="section-label"><h2>On the schedule</h2><span className="muted small">Daily operations</span></div>
+      <div className="section-label"><h2>On the schedule</h2></div>
 
       <div className="grid g2">
         {d.arrivals && (
@@ -49,7 +44,7 @@ export default function Dashboard() {
                     <td><Badge>{a.reservation_status}</Badge></td><td><Badge>{a.payment_status}</Badge></td><td className="num">{peso(a.totals.outstanding)}</td>
                     <td>{can('frontdesk') && a.pending_rooms > 0 && <Link className="btn sm gold" to={`/reservations/${a.id}/checkin`}>Check-in</Link>}</td></tr>
                 ))}
-                {!d.arrivals.length && <tr><td colSpan={6}><EmptyState icon="calendar" title="No arrivals today" detail="New arrivals will appear here." /></td></tr>}
+                {!d.arrivals.length && <tr><td colSpan={6}><EmptyState icon="calendar" title="No arrivals today" /></td></tr>}
               </tbody></table>
           </Panel>
         )}
@@ -61,7 +56,7 @@ export default function Dashboard() {
                   <tr key={a.id}><td><Link to={`/reservations/${a.id}`}>{a.reference}</Link></td><td>{a.full_name}</td><td className="num">{peso(a.totals.outstanding)}</td>
                     <td>{can('frontdesk') && <Link className="btn sm" to={`/reservations/${a.id}/checkout`}>Check-out</Link>}</td></tr>
                 ))}
-                {!d.departures.length && <tr><td colSpan={4}><EmptyState icon="door" title="No departures due" detail="Scheduled check-outs will appear here." /></td></tr>}
+                {!d.departures.length && <tr><td colSpan={4}><EmptyState icon="door" title="No departures due" /></td></tr>}
               </tbody></table>
           </Panel>
         )}
@@ -73,7 +68,7 @@ export default function Dashboard() {
                   <tr key={g.id}><td><Link to={`/daytour/${g.id}`}>{g.reference}</Link></td><td>{g.group_name}</td><td><Badge>{g.group_status}</Badge></td>
                     <td className="num">{g.actual_guests || g.estimated_guests}</td><td className="num">{peso(g.totals.outstanding)}</td></tr>
                 ))}
-                {!d.groups.length && <tr><td colSpan={5}><EmptyState icon="people" title="No groups today" detail="Your Day Tour groups will appear here." /></td></tr>}
+                {!d.groups.length && <tr><td colSpan={5}><EmptyState icon="people" title="No groups today" /></td></tr>}
               </tbody></table>
           </Panel>
         )}

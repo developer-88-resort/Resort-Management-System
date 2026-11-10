@@ -21,10 +21,10 @@ export function Metric({ icon, label, value, detail, tone = 'teal' }) {
   return <div className={`stat metric ${tone}`}>
     <div className="metric-top"><span className="l">{label}</span><span className="metric-icon"><Icon name={icon} /></span></div>
     <div className="v">{value}</div>
-    <div className="metric-detail">{detail}</div>
+    {detail && <div className="metric-detail">{detail}</div>}
   </div>;
 }
 
 export function EmptyState({ icon, title, detail }) {
-  return <div className="empty-state"><span className="empty-icon"><Icon name={icon} size={24} /></span><strong>{title}</strong><span>{detail}</span></div>;
+  return <div className="empty-state"><span className="empty-icon"><Icon name={icon} size={24} /></span><strong>{title}</strong>{detail && <span>{detail}</span>}</div>;
 }

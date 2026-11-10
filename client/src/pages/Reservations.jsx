@@ -31,18 +31,12 @@ export default function Reservations({ view }) {
   return (
     <div className="reservations-workspace">
       <div className="pagehead reservations-heading">
-        <div><div className="eyebrow">FRONT OFFICE / GUEST MANAGEMENT</div><h1>{title}</h1>
-          <p className="muted">{view === 'inhouse' ? 'Every current stay, with guest details and balances in one place.' : view === 'pending' ? 'Keep track of guests waiting for their room to be ready.' : 'From the first booking to the next welcome. Manage every stay here.'}</p>
-        </div>
+        <h1>{title}</h1>
         <span className="sp" />
         {can('reservation.edit') && <Link className="btn gold reservation-create" to="/reservations/new"><Icon name="plus" size={18} />New Reservation</Link>}
       </div>
 
       <section className="reservation-register" aria-label="Reservation directory">
-        <div className="register-toolbar">
-          <div className="register-title"><span className="register-icon"><Icon name="calendar" size={21} /></span><div><h2>Guest directory</h2><p>Bookings, stays & payment status</p></div></div>
-          <span className="register-count" aria-live="polite">{data ? data.reservations.length : '-'} <span>results</span></span>
-        </div>
         <div className="reservation-tabs" role="group" aria-label="Quick view">
           {views.map((item) => <button key={item.value} type="button" className={filter === item.value ? 'active' : ''} aria-pressed={filter === item.value} onClick={() => setFilter(item.value)}><Icon name={item.icon} size={17} />{item.label}</button>)}
         </div>
@@ -75,14 +69,13 @@ export default function Reservations({ view }) {
         {!data && !err && <div className="reservation-loading" role="status">Loading reservations...</div>}
         {data && !data.reservations.length && !err && <div className="reservation-empty">
           <div className="booking-illustration" aria-hidden="true"><span className="illustration-orbit" /><div className="illustration-calendar"><div className="illustration-calendar-top"><i /><i /></div><div className="illustration-calendar-grid">{Array.from({ length: 9 }, (_, i) => <span key={i} />)}</div></div><span className="illustration-search"><Icon name={filtered ? 'search' : 'calendar'} size={24} /></span></div>
-          <span className="eyebrow">{filtered ? 'TRY ANOTHER SEARCH' : 'READY FOR YOUR NEXT GUEST'}</span>
-          <h2>{filtered ? 'No matching reservations' : filter === 'inhouse' ? 'No guests in-house' : filter === 'pending' ? 'No guests waiting for a room' : 'Your next stay starts here'}</h2>
-          <p>{filtered ? 'Try a different guest name, status or arrival date.' : filter === 'inhouse' ? 'Checked-in guests will appear here with their stay details.' : filter === 'pending' ? 'Guests waiting for room readiness will appear here.' : 'No reservations in this view yet. New bookings will appear here with all the details you need.'}</p>
+          <h2>{filtered ? 'No matching reservations' : filter === 'inhouse' ? 'No guests in-house' : filter === 'pending' ? 'No guests waiting for a room' : 'No reservations found'}</h2>
+          {filtered && <p>Try a different name, status or arrival date.</p>}
           {filtered ? <button type="button" className="btn outline" onClick={() => { setQ(''); setStatus(''); setArrival(''); }}>Clear filters</button> : can('reservation.edit') && <Link className="btn outline" to="/reservations/new"><Icon name="plus" size={16} />Create a reservation</Link>}
         </div>}
-        <div className="register-footer"><span>{data ? data.reservations.length : '-'} reservation{data?.reservations.length === 1 ? '' : 's'} in this view</span><span><Icon name="arrow" size={14} />Select a guest to view their reservation</span></div>
+        <div className="register-footer"><span>{data ? data.reservations.length : '-'} reservation{data?.reservations.length === 1 ? '' : 's'} in this view</span></div>
       </section>
-      {can('reservation.view') && <div className="reservation-bottom-note"><Icon name="bed" size={17} /><span>Planning a stay? <Link to="/availability">Explore the availability calendar <Icon name="arrow" size={13} /></Link></span></div>}
+      {can('reservation.view') && <div className="reservation-bottom-note"><Icon name="bed" size={17} /><Link to="/availability">Availability calendar <Icon name="arrow" size={13} /></Link></div>}
     </div>
   );
 }

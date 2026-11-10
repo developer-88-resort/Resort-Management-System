@@ -772,3 +772,17 @@ button { font: inherit; cursor: pointer; }
   .availability-grid { width: 100%; }
   .planner-scroll { overflow: visible; max-height: none; }
 }
+
+/* Compact headings and empty states after removing redundant copy. */
+@media screen {
+  .reservation-register > .reservation-tabs { padding-top: 20px; }
+  .reservation-empty { min-height: 280px; padding: 30px 24px; gap: 0; }
+  .reservation-empty h2 { font-size: 20px; margin-bottom: 20px; }
+  .reservation-empty h2:has(+ p) { margin-bottom: 0; }
+  .reservation-empty .booking-illustration { margin-bottom: 20px; }
+  .booking-details .panel-h { margin-bottom: 22px; }
+  .summary-room-chips { margin-top: 0; }
+  .dashboard-quick-actions:empty { display: none; }
+  .dashboard-quick-actions .btn.outline { background: #fff; color: var(--teal); border-color: var(--teal); }
+  .reservation-bottom-note { margin-top: -8px; }
+}
