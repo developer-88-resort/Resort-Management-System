@@ -5,7 +5,7 @@ import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { ErrorBox, Field, Panel, Proposed, useAction, Badge } from '../components/ui.jsx';
 import { Icon } from '../components/Design.jsx';
-import { addDays, centsToInput, localToday, nights, peso, toCents } from '../util.js';
+import { addDays, centsToInput, localToday, nights, peso, toCents, fmtDate } from '../util.js';
 
 const emptyCounts = { adults: 2, children: 0, seniors: 0, pwd: 0 };
 
@@ -57,6 +57,23 @@ export default function ReservationForm() {
     return m;
   }, [avail]);
 
+  // Part 1 Fig. 3 "Room available? No -> Offer other dates or room types".
+  const fullCats = useMemo(() => Object.entries(byCategory).filter(([, rooms]) => !rooms.some((r) => r.available || selected.has(r.id))).map(([cat, rooms]) => ({ cat, typeId: rooms[0].room_type_id })), [byCategory, lines]); // eslint-disable-line
+  const [suggest, setSuggest] = useState({});
+  useEffect(() => {
+    if (!avail) return;
+    let live = true;
+    const want = [...fullCats];
+    for (const l of lines) {
+      const r = avail.rooms.find((x) => x.id === l.room_id);
+      if (r && !r.available && !l.locked && !want.find((w) => w.typeId === r.room_type_id)) want.push({ cat: r.category, typeId: r.room_type_id });
+    }
+    Promise.all(want.map((w) => api.get(`/rooms/availability/suggest?from=${checkIn}&to=${checkOut}&room_type_id=${w.typeId}${editing ? `&exclude_reservation=${id}` : ''}`)
+      .then((x) => [w.cat, x.suggestions]).catch(() => [w.cat, []])))
+      .then((pairs) => { if (live) setSuggest(Object.fromEntries(pairs)); });
+    return () => { live = false; };
+  }, [avail]); // eslint-disable-line
+  const otherTypes = Object.entries(byCategory).filter(([, rooms]) => rooms.some((r) => r.available)).map(([cat, rooms]) => `${cat} (${rooms.filter((r) => r.available).length} free)`);
   const toggle = (r) => {
     if (selected.has(r.id)) setLines(lines.filter((l) => l.room_id !== r.id || l.locked));
     else if (r.available) setLines([...lines, { room_id: r.id, room_no: r.room_no, category: r.category, rate: centsToInput(r.rate_per_night), ...emptyCounts }]);
@@ -108,6 +125,22 @@ export default function ReservationForm() {
         <p className="booking-panel-description">Select one or more rooms. Availability covers the full stay.</p>
         <div className="room-selection-legend"><span><i className="available" />Available</span><span><i className="selected" />Selected</span><span><i className="unavailable" />Unavailable</span></div>
         {!avail && <p className="muted">Choose valid dates to see availability.</p>}
+        {avail && Object.keys(suggest).some((k) => suggest[k]) && (
+          <div className="note" style={{ marginBottom: 12 }}>
+            <b>Not available for these dates.</b> Offer the guest other dates or room types:
+            {Object.entries(suggest).map(([cat, list]) => (
+              <div key={cat} className="row" style={{ marginTop: 6, gap: 6 }}>
+                <span className="small" style={{ minWidth: 90 }}><b>{cat}</b></span>
+                {list.length ? list.map((x) => (
+                  <button key={x.from} type="button" className="btn sm outline" onClick={() => { setCheckIn(x.from); setCheckOut(x.to); }}>
+                    {fmtDate(x.from)} to {fmtDate(x.to)} ({x.free} free)
+                  </button>
+                )) : <span className="small muted">No free dates within 3 weeks.</span>}
+              </div>
+            ))}
+            {otherTypes.length > 0 && <div className="small" style={{ marginTop: 6 }}>Other room types free for the same dates: {otherTypes.join(', ')}</div>}
+          </div>
+        )}
         {avail && Object.entries(byCategory).map(([cat, rooms]) => (
           <div key={cat} className="booking-category">
             <div className="booking-category-heading"><span className="category-bed"><Icon name="bed" size={18} /></span><h3>{cat}</h3><span className="category-rate">{peso(rooms[0].rate_per_night)} <span>/ night</span></span></div>

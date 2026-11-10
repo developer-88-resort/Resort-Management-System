@@ -86,6 +86,7 @@ export default function ReservationView() {
         {FD && open && d.totals.outstanding > 0 && <button className="btn outline" onClick={() => setModal('pay')}>Record payment</button>}
         {FD && open && <button className="btn outline" onClick={() => setModal('charge')}>Add charge</button>}
         {FD && open && <button className="btn outline" onClick={() => setModal('discount')}>Add approved discount</button>}
+        {FD && r.reservation_status !== 'Cancelled' && d.totals.outstanding < 0 && <button className="btn gold" onClick={() => setModal('credit')}>Return credit {peso(-d.totals.outstanding)}</button>}
         {FD && <Link className="btn outline" to={`/reservations/${id}/registration`}>Print registration form</Link>}
         <span style={{ flex: 1 }} />
         {can('reservation.edit') && active && !anyIn && <button className="btn danger" onClick={() => setModal('cancel')}>Cancel Reservation</button>}
@@ -177,6 +178,7 @@ export default function ReservationView() {
         </ReasonModal>
       )}
       {modal === 'refund' && <RefundModal d={d} settings={settings} onClose={() => setModal(null)} onDone={setD} />}
+      {modal === 'credit' && <CreditRefundModal d={d} settings={settings} onClose={() => setModal(null)} onDone={setD} />}
       {modal?.void && (
         <ReasonModal title={`Void charge: ${modal.void.description}`} needsApproval danger submitLabel="Void (post reversal)" onClose={() => setModal(null)}
           onSubmit={async ({ reason, approval }) => setD(await api.post(`/reservations/${id}/charges/${modal.void.id}/void`, { reason, approval }))}>
@@ -264,6 +266,33 @@ function RefundModal({ d, settings, onClose, onDone }) {
           <Field label="Reference"><input value={reference} onChange={(e) => setReference(e.target.value)} /></Field>
         </div>
       )}
+      <Field label="Reason (required)"><textarea value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+      <ApprovalFields value={approval} onChange={setApproval} />
+      <ErrorBox error={a.error} />
+    </Modal>
+  );
+}
+
+/** A credit owed to the guest (payment status Adjustment Pending) is returned as a separate, approved transaction. */
+function CreditRefundModal({ d, settings, onClose, onDone }) {
+  const credit = -d.totals.outstanding;
+  const [amount, setAmount] = useState((credit / 100).toFixed(2));
+  const [method, setMethod] = useState(settings.payment_methods?.[0]);
+  const [reference, setReference] = useState('');
+  const [reason, setReason] = useState('');
+  const [approval, setApproval] = useState({});
+  const a = useAction();
+  return (
+    <Modal title="Return credit to guest" onClose={onClose} footer={<>
+      <button className="btn outline" onClick={onClose}>Back</button>
+      <button className="btn" disabled={a.busy || !reason} onClick={() => a.run(async () => { onDone(await api.post(`/reservations/${d.reservation.id}/credit-refund`, { amount: toCents(amount), method, reference, reason, approval })); onClose(); })}>Record refund</button>
+    </>}>
+      <div className="note">The guest has paid {peso(credit)} more than the charges (for example a charge voided after payment). Payment status shows Adjustment Pending until it is returned.</div>
+      <div className="grid g3">
+        <Field label="Refund amount"><input className="num" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
+        <Field label="Paid out by"><select value={method} onChange={(e) => setMethod(e.target.value)}>{settings.payment_methods.map((m) => <option key={m}>{m}</option>)}</select></Field>
+        <Field label="Reference"><input value={reference} onChange={(e) => setReference(e.target.value)} /></Field>
+      </div>
       <Field label="Reason (required)"><textarea value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
       <ApprovalFields value={approval} onChange={setApproval} />
       <ErrorBox error={a.error} />

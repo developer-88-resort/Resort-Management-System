@@ -193,7 +193,7 @@ test('day tour: group, entry gate, lockers, charge to locker, settlement, lost k
     allocations: [{ target_type: 'locker_account', target_id: red15.id, amount: 85000 }, { target_type: 'locker_account', target_id: blue.id, amount: 90000 }],
   }));
   assert.equal(d.totals.outstanding, 0);
-  assert.equal(ok(await call('GET', '/daytour/lockers/search?color=Red&number=15')).locker.locker_status, 'Available');
+  assert.equal(ok(await call('GET', '/daytour/lockers/search?color=Red&number=15')).locker.locker_status, 'Available after clearance');
   // BLUE-102 key missing blocks checkout
   assert.equal((await call('POST', `/daytour/groups/${id}/checkout`, {})).status, 422);
   assert.equal((await call('POST', `/daytour/locker-accounts/${blue.id}/lost-key`, { penalty: 20000, note: 'Key not returned' })).status, 400);
@@ -346,4 +346,39 @@ test('day tour: cancelled advance booking deposit - refund or forfeit with appro
   d = ok(await call('POST', `/daytour/groups/${b}/refund-decision`, { decision: 'No Refund', reason: 'Late cancellation' }, 'fosup'));
   assert.equal(d.totals.outstanding, 0);
   assert.equal((await call('POST', `/daytour/groups/${b}/refund-decision`, { decision: 'No Refund', reason: 'again' }, 'fosup')).status, 409);
+});
+
+test('A4: Available after clearance can be issued to the next group', async () => {
+  const g = ok(await call('POST', '/daytour/groups', { booking_type: 'Walk-in', group_name: 'Next Group', contact_no: '1' }));
+  ok(await call('POST', `/daytour/groups/${g.group.id}/counts`, { counts: { ADULT: 1 } }));
+  ok(await call('POST', `/daytour/groups/${g.group.id}/payments`, { tenders: [{ method: 'Cash', amount: 50000 }] }));
+  const d = ok(await call('POST', `/daytour/groups/${g.group.id}/lockers`, { locker_id: 'RED-015', occupants: '1 Adult' }));
+  assert.equal(d.accounts[0].locker_status, 'Assigned');
+});
+
+test('A5: Adjustment Pending for a credit or a pending approval; credit refund clears it', async () => {
+  const room = await roomId('DX205');
+  const r = ok(await call('POST', '/reservations', { guest: { full_name: 'Credit, Guest', contact_no: '1' }, source: 'Website', check_in: addDays(T, 30), check_out: addDays(T, 31), lines: [{ room_id: room, adults: 2 }] }));
+  const id = r.reservation.id;
+  const c = ok(await call('POST', `/reservations/${id}/charges`, { kind: 'extra', description: 'Airport pickup', amount: 100000, reason: 'Requested by guest' }));
+  ok(await call('POST', `/reservations/${id}/payments`, { tenders: [{ method: 'Cash', amount: c.totals.total }] }));
+  let d = ok(await call('POST', `/reservations/${id}/charges/${c.charges[0].id}/void`, { reason: 'Cancelled pickup' }, 'fosup'));
+  assert.equal(d.totals.outstanding, -100000);
+  assert.equal(d.reservation.payment_status, 'Adjustment Pending');
+  assert.equal((await call('POST', `/reservations/${id}/credit-refund`, { amount: 100001, method: 'Cash', reason: 'x' }, 'fosup')).status, 400);
+  d = ok(await call('POST', `/reservations/${id}/credit-refund`, { amount: 100000, method: 'Cash', reason: 'Pickup cancelled' }, 'fosup'));
+  assert.equal(d.reservation.payment_status, 'Paid');
+  const ap = ok(await call('POST', '/approvals', { type: 'transfer_waiver', entity: 'reservation', entity_id: id, payload: { line_id: d.lines[0].id, to_room_id: 1 }, summary: 's', reason: 'r' }));
+  assert.equal(ok(await call('GET', `/reservations/${id}`)).reservation.payment_status, 'Adjustment Pending');
+  ok(await call('POST', `/approvals/${ap.approval.id}/reject`, { note: 'No' }, 'fosup'));
+  assert.equal(ok(await call('GET', `/reservations/${id}`)).reservation.payment_status, 'Paid');
+});
+
+test('A3: suggest other dates when a category is full', async () => {
+  const fm = ok(await call('GET', '/rooms', null)).rooms.filter((x) => x.category === 'Family');
+  const a = addDays(T, 40); const b = addDays(T, 41);
+  ok(await call('POST', '/reservations', { guest: { full_name: 'Full, House', contact_no: '1' }, source: 'Website', check_in: a, check_out: b, lines: fm.map((x) => ({ room_id: x.id, adults: 2 })) }));
+  const s = ok(await call('GET', `/rooms/availability/suggest?from=${a}&to=${b}&room_type_id=${fm[0].room_type_id}`)).suggestions;
+  assert.ok(s.length > 0);
+  assert.ok(s.every((x) => x.from !== a && x.free > 0));
 });

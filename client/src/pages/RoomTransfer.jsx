@@ -9,7 +9,7 @@ export default function RoomTransfer() {
   const { id, lineId } = useParams();
   const nav = useNavigate();
   const [res] = useLoad(`/reservations/${id}`);
-  const [o, , err] = useLoad(`/reservations/${id}/lines/${lineId}/transfer-options`);
+  const [o, reloadOptions, err] = useLoad(`/reservations/${id}/lines/${lineId}/transfer-options`);
   const [type, setType] = useState('fault');
   const [reason, setReason] = useState('');
   const [remarks, setRemarks] = useState('');
@@ -85,7 +85,10 @@ export default function RoomTransfer() {
                 </tr>))}</tbody>
             </table>
           </div>
-          <p className="small muted">Only rooms free for every remaining night ({fmtDate(o.window.start)} to {fmtDate(o.window.end)}) and ready can be picked.</p>
+          <div className="row" style={{ marginTop: 10 }}>
+            <button type="button" className="btn outline" onClick={() => { reloadOptions(); if (to && !o.rooms.find((r) => r.id === to)?.selectable) setTo(null); }}>Check Availability</button>
+            <span className="small muted" style={{ flex: 1 }}>Only rooms free for every remaining night ({fmtDate(o.window.start)} to {fmtDate(o.window.end)}) and ready can be picked.</span>
+          </div>
         </Panel>
         <Panel num={3} title="Price impact">
           <div className="kv">

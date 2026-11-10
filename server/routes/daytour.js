@@ -13,6 +13,8 @@ export const dayTourRouter = express.Router();
 dayTourRouter.use(authenticate);
 
 const ON_SITE = ['Arrived / Active', 'Settling'];
+/** Lockers that can be issued: Available, or Available after clearance (Part 3 Fig. 2). */
+const FREE = ['Available', 'Available after clearance'];
 const PAYERS = ['Representative', 'Self', 'Organizer'];
 
 function loadGroup(id) {
@@ -341,13 +343,13 @@ dayTourRouter.post('/groups/:id/lockers', requirePerm('daytour'), (req, res) => 
   const out = tx(() => {
     const l = lockerInfo(lockerId);
     if (!l) throw bad(`Locker ${lockerId} does not exist.`);
-    if (l.locker_status !== 'Available' || l.assignment) throw conflict(`Cannot assign ${lockerId}: locker is ${l.assignment ? `already in use by ${l.assignment.reference}` : l.locker_status}.`);
+    if (!FREE.includes(l.locker_status) || l.assignment) throw conflict(`Cannot assign ${lockerId}: locker is ${l.assignment ? `already in use by ${l.assignment.reference}` : l.locker_status}.`);
     const acc = Number(db.prepare('INSERT INTO locker_accounts(group_id, assignment_type, occupants, payer, created_by, created_at) VALUES(?,?,?,?,?,?)')
       .run(g.id, type, occupants, payer, req.user.username, now()).lastInsertRowid);
     db.prepare('INSERT INTO locker_assignments(account_id, locker_id, group_id, issued_at, issued_by) VALUES(?,?,?,?,?)').run(acc, lockerId, g.id, now(), req.user.username);
     db.prepare('UPDATE lockers SET locker_status = ? WHERE id = ?').run(type === 'Shared' ? 'Shared' : 'Assigned', lockerId);
     audit(req.user, 'locker.assign', 'day_tour_group', g.id, { to: { locker: lockerId, type, occupants } });
-    audit(req.user, 'locker.assign', 'locker', lockerId, { from: 'Available', to: type === 'Shared' ? 'Shared' : 'Assigned', reason: g.reference });
+    audit(req.user, 'locker.assign', 'locker', lockerId, { from: l.locker_status, to: type === 'Shared' ? 'Shared' : 'Assigned', reason: g.reference });
     return acc;
   });
   res.json({ ...groupDetail(g.id), account_id: out });
@@ -382,7 +384,7 @@ dayTourRouter.post('/locker-accounts/:id/return-key', requirePerm('daytour'), (r
       audit(req.user, 'daytour.settling', 'day_tour_group', g.id, { from: 'Arrived / Active', to: 'Settling', reason: 'First key returned' });
     }
     const cleared = clearLockerIfDone(req.user, a.id);
-    audit(req.user, 'locker.return_key', 'day_tour_group', a.group_id, { to: { locker: asg.locker_id, status: cleared ? 'Available' : 'Key Returned - Unsettled' } });
+    audit(req.user, 'locker.return_key', 'day_tour_group', a.group_id, { to: { locker: asg.locker_id, status: cleared ? 'Available after clearance' : 'Key Returned - Unsettled' } });
   });
   res.json(groupDetail(a.group_id));
 });
@@ -420,7 +422,7 @@ dayTourRouter.post('/locker-accounts/:id/transfer', requirePerm('daytour'), (req
   tx(() => {
     const to = lockerInfo(toId);
     if (!to) throw bad(`Locker ${toId} does not exist.`);
-    if (to.locker_status !== 'Available' || to.assignment) throw conflict(`Locker ${toId} is not available.`);
+    if (!FREE.includes(to.locker_status) || to.assignment) throw conflict(`Locker ${toId} is not available.`);
     db.prepare("UPDATE locker_assignments SET ended_at = ?, ended_by = ?, end_reason = 'faulty' WHERE id = ?").run(now(), req.user.username, asg.id);
     db.prepare("UPDATE lockers SET locker_status = 'Under Repair', status_note = ? WHERE id = ?").run(note, asg.locker_id);
     db.prepare('INSERT INTO locker_assignments(account_id, locker_id, group_id, issued_at, issued_by) VALUES(?,?,?,?,?)').run(a.id, toId, a.group_id, now(), req.user.username);
@@ -484,7 +486,7 @@ dayTourRouter.post('/opening', requirePerm('approve'), (req, res) => {
         const lockerId = str(l.locker_id, `Locker on line ${i + 1}`).toUpperCase();
         const info = lockerInfo(lockerId);
         if (!info) throw bad(`Locker ${lockerId} does not exist.`);
-        if (info.locker_status !== 'Available' || info.assignment) throw conflict(`Locker ${lockerId} is not available.`);
+        if (!FREE.includes(info.locker_status) || info.assignment) throw conflict(`Locker ${lockerId} is not available.`);
         const type = oneOf(l.assignment_type || 'Individual', ['Individual', 'Shared'], 'Assignment type');
         const acc = Number(db.prepare('INSERT INTO locker_accounts(group_id, assignment_type, occupants, payer, created_by, created_at) VALUES(?,?,?,?,?,?)')
           .run(id, type, str(l.occupants, `Occupants of ${lockerId}`), oneOf(l.payer || 'Representative', PAYERS, 'Payer'), req.user.username, now()).lastInsertRowid);

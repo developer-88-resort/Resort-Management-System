@@ -3,6 +3,9 @@
 import express from 'express';
 import { db } from '../db.js';
 import { authenticate, requirePerm, can, bad, notFound, conflict, HttpError, str, now, audit, tx } from '../lib.js';
+import { refreshReservationStatus } from '../domain.js';
+
+const refresh = (entity, id) => { if (entity === 'reservation') refreshReservationStatus(id); };
 
 export const approvalsRouter = express.Router();
 approvalsRouter.use(authenticate);
@@ -47,6 +50,7 @@ approvalsRouter.post('/', requirePerm('frontdesk'), (req, res) => {
       .run(type, entity, entity_id, JSON.stringify(payload), summary, reason, req.user.username, now(), req.body.approver_requested || null,
         self ? 'Approved' : 'Pending', self ? req.user.username : null, self ? now() : null, self ? 'Requested and approved by supervisor' : null).lastInsertRowid);
     audit(req.user, 'approval.request', entity, entity_id, { to: { approval: newId, type, summary, status: self ? 'Approved' : 'Pending' }, reason });
+    refresh(entity, entity_id);
     return newId;
   });
   res.json({ approval: view(db.prepare('SELECT * FROM approval_requests WHERE id = ?').get(id)) });
@@ -59,6 +63,7 @@ function decide(req, res, status) {
   const note = status === 'Rejected' ? str(req.body.note, 'Reason for rejecting') : (req.body.note || null);
   db.prepare('UPDATE approval_requests SET status = ?, decided_by = ?, decided_at = ?, decision_note = ? WHERE id = ?').run(status, req.user.username, now(), note, a.id);
   audit(req.user, `approval.${status.toLowerCase()}`, a.entity, a.entity_id, { from: 'Pending', to: { approval: a.id, status }, reason: note || a.reason, approver: req.user.username });
+  refresh(a.entity, a.entity_id);
   res.json({ approval: view(db.prepare('SELECT * FROM approval_requests WHERE id = ?').get(a.id)) });
 }
 approvalsRouter.post('/:id/approve', requirePerm('approve'), (req, res) => decide(req, res, 'Approved'));

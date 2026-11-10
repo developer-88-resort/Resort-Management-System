@@ -11,7 +11,7 @@ function LockerSearch({ color, label, onUse }) {
   const [res, setRes] = useState(null);
   const a = useAction();
   const search = () => a.run(async () => setRes((await api.get(`/daytour/lockers/search?color=${color}&number=${Number(n)}`)).locker));
-  const free = res && res.locker_status === 'Available' && !res.assignment;
+  const free = res && ['Available', 'Available after clearance'].includes(res.locker_status) && !res.assignment;
   return (
     <div className="stack" style={{ gap: 10 }}>
       <div className="row" style={{ alignItems: 'end' }}>

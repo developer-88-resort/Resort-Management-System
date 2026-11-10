@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
-import { Badge, Check, ErrorBox, Field, Open, Panel, TenderEntry, useAction, useLoad } from '../components/ui.jsx';
+import { Badge, Check, ErrorBox, Field, Modal, Open, Panel, TenderEntry, useAction, useLoad } from '../components/ui.jsx';
 import { centsToInput, peso, toCents } from '../util.js';
 import { LockerActionModals } from './LockerAssignment.jsx';
 
@@ -21,6 +21,7 @@ export default function GroupSettlement() {
   const [sel, setSel] = useState({}); // key: 'group' | accountId -> true
   const [modal, setModal] = useState(null);
   const [paid, setPaid] = useState(null);
+  const [pick, setPick] = useState(false);
   const a = useAction();
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function GroupSettlement() {
     if (last) setD(last);
   });
   const keysOut = d.accounts.filter((x) => x.key === 'Not returned');
+  const target = keysOut.find((x) => sel[x.id]) || keysOut[0] || null;
 
   return (
     <div className="stack">
@@ -99,6 +101,13 @@ export default function GroupSettlement() {
               </tbody>
             </table>
           </div>
+          {onSite && can('daytour') && (
+            <div className="row" style={{ marginTop: 12 }}>
+              <button className="btn outline" disabled={!keysOut.length} onClick={() => setModal({ kind: 'return', acc: target })}>Record Key Return{target ? ` (${target.locker_id})` : ''}</button>
+              <button className="btn outline" disabled={!keysOut.length} onClick={() => setPick(true)}>Report Lost / Faulty Locker</button>
+              <span className="small muted" style={{ flex: 1 }}>Tick a locker in the table to choose it; otherwise the first locker with its key out is used.</span>
+            </div>
+          )}
           <p className="small muted">Front Office checks the returned key against the assignment, then the balances including Restaurant, Massage and Mini Bar. A locker is Available only after its key is back and all linked charges are settled.</p>
         </Panel>
       </div>
@@ -138,6 +147,8 @@ export default function GroupSettlement() {
       <ErrorBox error={a.error} />
       <div className="actionbar"><Link className="btn outline" to={`/daytour/${id}/lockers`}>Lockers</Link><Link className="btn outline" to={`/daytour/${id}`}>Group check-in</Link></div>
       <LockerActionModals modal={modal} setModal={setModal} onDone={setD} settings={settings} />
+      {pick && <PickLostFaulty accounts={d.accounts.filter((x) => x.key === 'Not returned')} initial={d.accounts.find((x) => x.key === 'Not returned' && sel[x.id])?.id}
+        onClose={() => setPick(false)} onPick={(kind, acc) => { setPick(false); setModal({ kind, acc }); }} />}
     </div>
   );
 }
@@ -160,5 +171,21 @@ function LostKeyPanel({ accounts, settings, onDone }) {
       <p className="small muted">Records the penalty, the responsible group, the locker, the payment and the incident. The locker stays unavailable until the security or replacement decision.</p>
       <ErrorBox error={a.error} />
     </Panel>
+  );
+}
+
+/** Report Lost / Faulty Locker (Part 3 Fig. 3 panel 2): choose the locker and what happened. */
+function PickLostFaulty({ accounts, initial, onClose, onPick }) {
+  const [id, setId] = useState(initial || accounts[0]?.id);
+  const acc = accounts.find((x) => x.id === Number(id));
+  return (
+    <Modal title="Report Lost / Faulty Locker" onClose={onClose} footer={<>
+      <button className="btn outline" onClick={onClose}>Back</button>
+      <button className="btn danger" disabled={!acc} onClick={() => onPick('lost', acc)}>Lost key</button>
+      <button className="btn" disabled={!acc} onClick={() => onPick('transfer', acc)}>Faulty locker (move guest)</button>
+    </>}>
+      <Field label="Locker with key out"><select value={id} onChange={(e) => setId(e.target.value)}>{accounts.map((x) => <option key={x.id} value={x.id}>{x.locker_id} - {x.occupants}</option>)}</select></Field>
+      <p className="small muted">Lost key: penalty within the configured range, locker stays unavailable (OD-14). Faulty: the guest moves to another locker and unpaid charges move with the account.</p>
+    </Modal>
   );
 }

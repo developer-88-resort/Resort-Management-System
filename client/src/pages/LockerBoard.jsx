@@ -14,7 +14,7 @@ export default function LockerBoard() {
   const [d, reload, err] = useLoad(`/daytour/lockers?color=${color}`);
   const [rel, setRel] = useState(null);
   const lockers = (d?.lockers || []).filter((l) => !status || l.locker_status === status);
-  const bg = (s) => ({ Available: '#fff', Assigned: 'var(--navy)', Shared: 'var(--navy-2)', 'Key Returned - Unsettled': 'var(--gold-soft)', Lost: 'var(--red-soft)', 'Under Repair': 'var(--red-soft)' }[s]);
+  const bg = (s) => ({ Available: '#fff', 'Available after clearance': 'var(--green-soft)', Assigned: 'var(--navy)', Shared: 'var(--navy-2)', 'Key Returned - Unsettled': 'var(--gold-soft)', Lost: 'var(--red-soft)', 'Under Repair': 'var(--red-soft)' }[s]);
   const fg = (s) => (['Assigned', 'Shared'].includes(s) ? '#fff' : 'var(--ink)');
   return (
     <div className={`stack locker-workspace zone-${color.toLowerCase()}`}>
@@ -41,7 +41,7 @@ export default function LockerBoard() {
             onClick={() => ['Lost', 'Under Repair'].includes(l.locker_status) && can('approve') && setRel(l)}>
             <div className="locker-tile-top"><Icon name="locker" size={15} /><span className="locker-status-dot" /></div>
             <b className="locker-tile-number">{String(l.number).padStart(3, '0')}</b>
-            <div className="locker-tile-detail">{l.reference ? <Link to={`/daytour/${l.reference}`} style={{ color: 'inherit' }}>{l.reference}</Link> : l.locker_status === 'Available' ? '' : l.locker_status}</div>
+            <div className="locker-tile-detail">{l.reference ? <Link to={`/daytour/${l.reference}`} style={{ color: 'inherit' }}>{l.reference}</Link> : l.locker_status === 'Available' ? '' : l.locker_status === 'Available after clearance' ? 'Cleared' : l.locker_status}</div>
           </div>
         ))}
       </div></div>

@@ -666,3 +666,26 @@ reservationsRouter.post('/:id/lines/:lineId/arrived', requirePerm('frontdesk'), 
   audit(req.user, req.body.undo ? 'checkin.pending_undo' : 'checkin.pending', 'reservation', r.id, { to: { line: l.id, stay: req.body.undo ? null : 'Check-in Pending' }, reason: req.body.note });
   res.json(reservationDetail(r.id));
 });
+
+/** Return a credit to the guest (e.g. a charge voided after it was paid). Separate, approved transaction. */
+reservationsRouter.post('/:id/credit-refund', requirePerm('frontdesk'), (req, res) => {
+  const r = load(req.params.id);
+  if (r.reservation_status === 'Cancelled') throw conflict('Use the refund decision for a cancelled reservation.');
+  const credit = -reservationTotals(r.id).outstanding;
+  if (credit <= 0) throw conflict('There is no credit to return.');
+  const amount = money(req.body.amount, 'Refund amount', { allowZero: false });
+  if (amount > credit) throw bad('Refund cannot exceed the credit.');
+  if (!getSetting('payment_methods', []).includes(req.body.method)) throw bad('Choose the refund method.');
+  const reason = str(req.body.reason, 'Reason');
+  const approver = verifyApproval(req, req.body.approval, 'Returning a credit');
+  tx(() => {
+    recordPayment(req.user, {
+      kind: 'refund', accountType: 'reservation', accountId: r.id, purpose: 'Credit refund', note: reason, issueReceipt: false,
+      tenders: [{ method: req.body.method, amount: -amount, reference: req.body.reference || null }],
+      allocations: [{ target_type: 'reservation', target_id: r.id, amount: -amount }],
+    });
+    audit(req.user, 'folio.credit_refund', 'reservation', r.id, { to: { amount }, reason, approver });
+    refreshReservationStatus(r.id);
+  });
+  res.json(reservationDetail(r.id));
+});

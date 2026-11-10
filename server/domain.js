@@ -111,6 +111,9 @@ export function refreshReservationStatus(resId) {
   if (status === 'Cancelled') {
     pay = r.refund_decision || (t.paid > 0 ? 'Refund Pending' : 'No Refund');
     if (!part1 && pay === 'Refund Completed') pay = 'Refunded';
+  } else if (t.outstanding < 0 || db.prepare("SELECT 1 FROM approval_requests WHERE entity = 'reservation' AND entity_id = ? AND status = 'Pending'").get(resId)) {
+    // Part 3 s2.2: a credit owed to the guest, or a price adjustment waiting for approval.
+    pay = 'Adjustment Pending';
   } else if (status === 'Checked Out') pay = t.outstanding <= 0 ? 'Closed' : 'Balance Due';
   else if (inHouse && part1) pay = t.outstanding <= 0 ? 'Settled' : 'Balance Due'; // Part 1 s4.2: guest in-house
   else if (t.paid <= 0 && t.total > 0) pay = 'Unpaid';
@@ -166,8 +169,9 @@ export function clearLockerIfDone(user, accountId) {
     return false;
   }
   db.prepare("UPDATE locker_assignments SET ended_at = ?, ended_by = ?, end_reason = 'returned' WHERE id = ?").run(now(), user?.username, a.id);
-  db.prepare("UPDATE lockers SET locker_status = 'Available', status_note = NULL WHERE id = ?").run(a.locker_id);
-  audit(user, 'locker.cleared', 'locker', a.locker_id, { to: 'Available', reason: 'Key returned and all linked charges settled' });
+  // Part 3 Fig. 2: key back + all paid -> "Available after clearance"; it can be issued to the next group.
+  db.prepare("UPDATE lockers SET locker_status = 'Available after clearance', status_note = NULL WHERE id = ?").run(a.locker_id);
+  audit(user, 'locker.cleared', 'locker', a.locker_id, { from: 'Key Returned - Unsettled', to: 'Available after clearance', reason: 'Key returned and all linked charges settled' });
   return true;
 }
 

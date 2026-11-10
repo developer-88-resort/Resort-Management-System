@@ -33,7 +33,7 @@ export const guestsLabel = (l) => [l.adults && `${l.adults} Ad`, l.children && `
 export function tone(status) {
   const s = String(status || '');
   if (/^Reserved/.test(s)) return 'amber';
-  if (/^(Clean|Available|Paid|Closed|Cleared|READY|Checked Out|Refund Completed|Refunded|Settled|Returned)$/i.test(s)) return 'green';
+  if (/^(Clean|Available|Paid|Closed|Cleared|READY|Checked Out|Refund Completed|Refunded|Settled|Returned|Available after clearance)$/i.test(s)) return 'green';
   if (/Dirty|Lost|Under Repair|Blocked|Cancelled|Unpaid|Key out|NOT READY|Balance Due/i.test(s)) return 'red';
   if (/Inspection|Cleaning|Partially|Pending|Settling|Unsettled|Not Ready|Reserved|Advance/i.test(s)) return 'amber';
   if (/Occupied|Checked In|Assigned|Shared|Arrived|Active/i.test(s)) return 'navy';

@@ -181,7 +181,7 @@ export default function CheckIn() {
             <div className="stack" style={{ gap: 10 }}>
               <div className="grid g3">
                 <Field label="Original"><input readOnly className="num" value={peso(d.totals.total)} /></Field>
-                <Field label="Paid to date"><input readOnly className="num" value={peso(d.totals.paid)} /></Field>
+                <Field label="Down Payment" hint={<span className="small muted">requested {peso(d.totals.downPaymentRequired)}</span>}><input readOnly className="num" value={peso(d.totals.paid)} title="Received so far" /></Field>
                 <Field label="Outstanding"><input readOnly className="num watch" value={peso(d.totals.outstanding)} /></Field>
               </div>
               {d.payments.length > 0 && (

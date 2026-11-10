@@ -74,6 +74,37 @@ roomsRouter.get('/availability', requirePerm('reservation.view', 'frontdesk'), (
   res.json({ rooms: out, nights: nightsBetween(from, to) });
 });
 
+/**
+ * Part 1 Fig. 3 "Offer other dates or room types": the nearest start dates (same length of stay)
+ * when a category has a free room for every night.
+ */
+roomsRouter.get('/availability/suggest', requirePerm('reservation.view', 'frontdesk'), (req, res) => {
+  const { from, to } = req.query;
+  if (!isDate(from) || !isDate(to) || to <= from) throw bad('Choose a valid check-in and check-out date.');
+  const typeId = Number(req.query.room_type_id) || null;
+  const exclude = String(req.query.exclude_reservation || '');
+  const excludeLines = exclude ? db.prepare('SELECT id FROM reservation_room_lines WHERE reservation_id = ?').all(exclude).map((x) => x.id) : [];
+  const rooms = db.prepare(`SELECT r.* FROM rooms r JOIN room_types t ON t.id = r.room_type_id WHERE r.active = 1 AND t.active = 1 AND (? IS NULL OR r.room_type_id = ?)`).all(typeId, typeId);
+  const n = nightsBetween(from, to);
+  const out = [];
+  const shifts = [];
+  for (let i = 1; i <= 21; i++) shifts.push(i, -i);
+  for (const s of shifts) {
+    const a = addDays(from, s);
+    if (a < today()) continue;
+    const b = addDays(a, n);
+    const free = rooms.filter((r) => {
+      if (r.block_status !== 'None' && a <= today()) return false;
+      if (roomBookings(r.id, a, b, excludeLines).length) return false;
+      const occ = occupyingStay(r.id);
+      return !(occ && !excludeLines.includes(occ.line_id) && a <= today());
+    });
+    if (free.length) out.push({ from: a, to: b, shift: s, free: free.length });
+    if (out.length >= 4) break;
+  }
+  res.json({ suggestions: out.sort((x, y) => x.from.localeCompare(y.from)) });
+});
+
 /** Calendar grid: who holds each room each night. */
 roomsRouter.get('/calendar', requirePerm('reservation.view', 'frontdesk'), (req, res) => {
   const from = isDate(req.query.from) ? req.query.from : today();
