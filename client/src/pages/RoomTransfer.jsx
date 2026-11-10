@@ -1,6 +1,7 @@
 // Room transfer (Part 2, Figs. 2-3). The reason decides who pays: fault = free upgrade (approval), guest = paid upgrade.
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { askConfirm } from '../components/notify.jsx';
 import { api } from '../api.js';
 import { Badge, ErrorBox, Field, Open, Panel, Proposed, TenderEntry, useAction, useLoad } from '../components/ui.jsx';
 import { fmtDate, peso } from '../util.js';
@@ -42,6 +43,7 @@ export default function RoomTransfer() {
   const ready = target && reason && approved;
 
   const submit = (tenders) => a.run(async () => {
+    if (!(await askConfirm({ title: 'Confirm Transfer', confirmLabel: 'Confirm Transfer', message: `Move ${res.guest.full_name} from ${o.line.room_no} to ${target.room_no}? ${isPaid ? `The ${peso(value)} difference will be billed and paid now.` : isWaiver ? `The ${peso(value)} difference is waived.` : 'No price change.'}` }))) return false;
     await api.post(`/reservations/${id}/lines/${lineId}/transfer`, {
       to_room_id: to, reason_type: type, reason, remarks, report_defect: reportDefect, approval_id: isWaiver ? appr?.id : undefined, tenders,
     });

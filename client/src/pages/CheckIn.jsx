@@ -1,6 +1,7 @@
 // Room check-in (Part 2, Fig. 1): several rooms, per-room readiness, registration, split-tender payment, 4-item gate.
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { askConfirm } from '../components/notify.jsx';
 import { api, fileToPayload, attachmentUrl } from '../api.js';
 import { ApprovalFields, Badge, Check, ErrorBox, Field, Modal, Open, Panel, Proposed, TenderEntry, useAction, useLoad } from '../components/ui.jsx';
 import { fmtDate, fmtTime, guestsLabel, peso } from '../util.js';
@@ -214,6 +215,7 @@ export default function CheckIn() {
         {openCount > 0 && <span className="open">{openCount} open</span>}
         <button className={`btn gold ${gateOk ? '' : 'locked'}`} disabled={!gateOk || a.busy}
           onClick={() => a.run(async () => {
+            if (!(await askConfirm({ title: 'Confirm Check-in', confirmLabel: 'Confirm Check-in', message: `Check in ${selLines.map((l) => l.room_no).join(', ')} for ${d.guest.full_name}? The room(s) become Occupied and keys may be released.` }))) return;
             const res = await api.post(`/reservations/${id}/checkin`, { line_ids: sel, exception: exc?.reason ? { reason: exc.reason, approval: exc.approval } : undefined });
             setDone(selLines.map((l) => l.room_no).join(', ')); setSel([]); setD(res); setExc(null);
           })}>Confirm Check-in ({sel.length} room{sel.length === 1 ? '' : 's'})</button>

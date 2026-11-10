@@ -4,6 +4,7 @@ import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './auth.jsx';
 import { ErrorBox, Field } from './components/ui.jsx';
 import SignInLayout from './components/SignInLayout.jsx';
+import { ConfirmHost, NotificationBell, Toaster } from './components/notify.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Reservations from './pages/Reservations.jsx';
 import FollowUp from './pages/FollowUp.jsx';
@@ -127,6 +128,7 @@ function Shell({ children }) {
         <header className="topbar noprint">
           <span className="crumb">IRMS &nbsp;|&nbsp; {current?.label || 'Front Office'}</span>
           <span className="sp" />
+          <NotificationBell />
           <span className="who">{user.role_label}: {user.username} &nbsp; {today}</span>
         </header>
         <main className="content">{children}</main>
@@ -141,6 +143,8 @@ export default function App() {
   if (!user) return <Login />;
   return (
     <Shell>
+      <Toaster />
+      <ConfirmHost />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/reservations" element={<Reservations key="all" />} />

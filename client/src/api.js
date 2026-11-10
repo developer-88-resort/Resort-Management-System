@@ -25,8 +25,67 @@ async function request(method, url, body) {
     setToken(null);
     window.dispatchEvent(new Event('irms:logout'));
   }
-  if (!res.ok) throw new ApiError(res.status, data);
+  if (!res.ok) {
+    const err = new ApiError(res.status, data);
+    if (res.status !== 401 && !url.startsWith('/auth/')) window.dispatchEvent(new CustomEvent('irms:toast', { detail: { type: 'error', message: err.message, details: err.failures } }));
+    throw err;
+  }
+  if (method !== 'GET') {
+    const msg = successMessage(method, url, data);
+    if (msg) window.dispatchEvent(new CustomEvent('irms:toast', { detail: { type: 'success', message: msg } }));
+  }
   return data;
+}
+
+/** Plain-language confirmation of what was saved. */
+function successMessage(method, url, data) {
+  const path = url.split('?')[0];
+  if (path.startsWith('/auth/') || path.endsWith('/print')) return null;
+  const receipt = data?.payment?.receipt ? ` ${data.payment.receipt.doc_type} ${data.payment.receipt.receipt_no} issued.` : '';
+  const rules = [
+    [/^\/reservations$/, 'Reservation saved. The room(s) are now blocked.'],
+    [/^\/reservations\/opening$/, 'Opening record saved.'],
+    [/^\/reservations\/\d+$/, 'Reservation updated.'],
+    [/\/lines\/\d+\/transfer$/, 'Room transfer confirmed.'],
+    [/^\/reservations\/\d+\/checkin$/, 'Check-in confirmed. Keys may be released.'],
+    [/^\/reservations\/\d+\/checkout$/, 'Check-out complete. Room(s) set to Dirty.'],
+    [/^\/daytour\/groups\/\d+\/checkout$/, 'Group checked out.'],
+    [/\/payments$/, `Payment recorded.${receipt}`],
+    [/\/cancel$/, 'Cancelled. History is kept.'],
+    [/\/refund-decision$/, 'Refund decision recorded.'],
+    [/\/credit-refund$/, 'Credit returned to the guest.'],
+    [/\/charges\/\d+\/void$|\/transactions\/\d+\/void$/, 'Reversal posted. The original stays on record.'],
+    [/\/charges$/, 'Charge added to the folio.'],
+    [/\/discounts$/, 'Discount added.'],
+    [/\/id-verify$/, 'ID verification saved.'],
+    [/\/signed-form$/, 'Signed registration form recorded.'],
+    [/\/hk-confirm$/, 'Housekeeping confirmation updated.'],
+    [/\/arrived$/, 'Guest status updated (Check-in Pending).'],
+    [/\/follow-up$/, 'Follow-up logged.'],
+    [/^\/approvals$/, data?.approval?.status === 'Approved' ? 'Approved.' : 'Approval requested. Waiting for the supervisor.'],
+    [/\/approve$/, 'Request approved.'],
+    [/\/reject$/, 'Request rejected.'],
+    [/\/hk-status$/, 'Room status updated.'],
+    [/\/defects\/\d+\/resolve$/, 'Defect resolved.'],
+    [/\/defects$/, 'Defect reported.'],
+    [/\/block$/, 'Room blocked.'],
+    [/\/release$/, 'Released back to service.'],
+    [/^\/daytour\/groups$/, 'Day Tour group saved.'],
+    [/^\/daytour\/opening$/, 'Day Tour opening record saved.'],
+    [/\/counts$/, 'Guest counts saved.'],
+    [/\/facilities$/, 'Facility charge added.'],
+    [/\/entry-exception$/, 'Advance-group terms approved.'],
+    [/\/start-settlement$/, 'Settlement started.'],
+    [/\/groups\/\d+\/lockers$/, 'Locker assigned.'],
+    [/\/return-key$/, 'Key return recorded.'],
+    [/\/lost-key$/, 'Lost key recorded. Penalty added.'],
+    [/\/locker-accounts\/\d+\/transfer$/, 'Guest moved to the new locker. Charges moved with the account.'],
+    [/^\/department\/transactions$/, data?.duplicate ? 'Already posted. No duplicate was created.' : data?.transaction?.method === 'charge' ? `Charge ${data.transaction.source_txn_id} posted.` : `Sale ${data?.transaction?.source_txn_id || ''} recorded.`],
+    [/\/attachment$/, 'Attachment saved.'],
+    [/^\/reports\/reconciliation$/, 'Reconciliation saved.'],
+  ];
+  for (const [re, msg] of rules) if (re.test(path)) return msg;
+  return 'Saved.';
 }
 
 export const api = {

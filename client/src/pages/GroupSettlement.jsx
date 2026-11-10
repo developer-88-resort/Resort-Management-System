@@ -1,6 +1,7 @@
 // Group settlement and key return (Part 3, Fig. 3). Modes can be mixed per locker. One receipt per payment.
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { askConfirm } from '../components/notify.jsx';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { Badge, Check, ErrorBox, Field, Modal, Open, Panel, TenderEntry, useAction, useLoad } from '../components/ui.jsx';
@@ -140,7 +141,7 @@ export default function GroupSettlement() {
             <p className="small muted">Group becomes Checked Out only when both are done. A lost key is cleared once its penalty is recorded and paid <Open id="OD-15" />.</p>
             {g.group_status === 'Arrived / Active' && can('daytour') && <button className="btn outline" onClick={() => a.run(async () => setD(await api.post(`/daytour/groups/${id}/start-settlement`)))}>Start settlement (departure)</button>}
             <button className={`btn gold ${d.gates.allSettled && d.gates.allKeysBack && onSite ? '' : 'locked'}`} disabled={!(d.gates.allSettled && d.gates.allKeysBack && onSite) || a.busy}
-              onClick={() => a.run(async () => setD(await api.post(`/daytour/groups/${id}/checkout`)))}>Check Out Group</button>
+              onClick={() => a.run(async () => { if (await askConfirm({ title: 'Check Out Group', confirmLabel: 'Check Out Group', message: `Check out ${g.reference} ${g.group_name}? All accounts are settled and keys are back. The group will be closed.` })) setD(await api.post(`/daytour/groups/${id}/checkout`)); })}>Check Out Group</button>
           </div>
         </Panel>
       </div>

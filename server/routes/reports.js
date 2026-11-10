@@ -2,7 +2,7 @@
 import express from 'express';
 import { db } from '../db.js';
 import { authenticate, requirePerm, can, isDate, today, dayStartIso, dayEndIso, getSetting, bad, now, audit } from '../lib.js';
-import { reservationTotals, groupTotals, roomAvailabilityToday } from '../domain.js';
+import { reservationTotals, groupTotals, roomAvailabilityToday, roomReady } from '../domain.js';
 
 export const reportsRouter = express.Router();
 reportsRouter.use(authenticate);
@@ -117,4 +117,62 @@ reportsRouter.post('/reconciliation', requirePerm('reports', 'frontdesk'), (req,
     .run(date, JSON.stringify(lines), req.body.notes || null, total, req.user.username, now()).lastInsertRowid;
   audit(req.user, 'reconciliation.save', 'reconciliation', Number(id), { to: { date, total_variance: total }, reason: req.body.notes });
   res.json({ id: Number(id) });
+});
+
+// ---------------------------------------------------------------------
+// Notifications: things that need someone's attention now, filtered by role.
+// Each alert has a stable key so the client can tell which ones are new.
+// ---------------------------------------------------------------------
+reportsRouter.get('/alerts', (req, res) => {
+  const t = today();
+  const out = [];
+  const add = (key, level, text, link) => out.push({ key, level, text, link });
+
+  if (can(req.user, 'approve')) {
+    const n = db.prepare("SELECT COUNT(*) AS c FROM approval_requests WHERE status = 'Pending'").get().c;
+    if (n) add(`approvals:${n}`, 'warn', `${n} approval request${n > 1 ? 's' : ''} waiting for you`, '/approvals');
+  }
+  if (can(req.user, 'frontdesk')) {
+    // Guests waiting for a room (Check-in Pending): tell Front Office as soon as the room is ready.
+    const waiting = db.prepare(`SELECT l.id, l.room_id, l.arrived_at, rm.room_no, r.id AS rid, g.full_name FROM reservation_room_lines l
+        JOIN rooms rm ON rm.id = l.room_id JOIN reservations r ON r.id = l.reservation_id JOIN guests g ON g.id = r.guest_id
+        WHERE l.line_status = 'Active' AND l.arrived_at IS NOT NULL`).all();
+    for (const w of waiting) {
+      const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(w.room_id);
+      if (roomReady(room, w.id).ready) add(`ready:${w.id}`, 'success', `Room ${w.room_no} is ready for ${w.full_name} (waiting guest)`, `/reservations/${w.rid}/checkin`);
+    }
+    const stillWaiting = waiting.length - out.filter((a) => a.key.startsWith('ready:')).length;
+    if (stillWaiting > 0) add(`waiting:${stillWaiting}`, 'info', `${stillWaiting} guest room${stillWaiting > 1 ? 's' : ''} still waiting for Housekeeping`, '/pending');
+    const arrivals = db.prepare(`SELECT COUNT(DISTINCT r.id) AS c FROM reservations r JOIN reservation_room_lines l ON l.reservation_id = r.id
+        WHERE r.check_in = ? AND l.line_status = 'Active'`).get(t).c;
+    if (arrivals) add(`arrivals:${t}:${arrivals}`, 'info', `${arrivals} reservation${arrivals > 1 ? 's' : ''} arriving today not yet checked in`, '/');
+    const due = db.prepare(`SELECT COUNT(DISTINCT r.id) AS c FROM reservations r JOIN reservation_room_lines l ON l.reservation_id = r.id
+        WHERE r.check_out <= ? AND l.line_status = 'Checked In'`).get(t).c;
+    if (due) add(`departures:${t}:${due}`, 'warn', `${due} stay${due > 1 ? 's' : ''} due to check out`, '/');
+    for (const r of db.prepare("SELECT r.id, r.reference, g.full_name FROM reservations r JOIN guests g ON g.id = r.guest_id WHERE r.payment_status = 'Adjustment Pending' LIMIT 10").all())
+      add(`adjust:${r.id}`, 'warn', `${r.reference} ${r.full_name}: payment adjustment pending`, `/reservations/${r.id}`);
+  }
+  if (can(req.user, 'reservation.edit')) {
+    const overdue = db.prepare("SELECT id FROM reservations WHERE reservation_status = 'Active / Booked' AND down_payment_due < ?").all(t)
+      .filter((r) => reservationTotals(r.id).downPaymentOutstanding > 0).length;
+    if (overdue) add(`dp:${t}:${overdue}`, 'warn', `${overdue} reservation${overdue > 1 ? 's' : ''} past the down payment due date`, '/followup');
+  }
+  if (can(req.user, 'daytour.view')) {
+    const adv = db.prepare("SELECT COUNT(*) AS c FROM day_tour_groups WHERE group_status = 'Advance Booking' AND arrival_date = ?").get(t).c;
+    if (adv) add(`dtadv:${t}:${adv}`, 'info', `${adv} Day Tour advance booking${adv > 1 ? 's' : ''} arriving today`, '/daytour');
+    const unsettled = db.prepare("SELECT COUNT(*) AS c FROM lockers WHERE locker_status = 'Key Returned - Unsettled'").get().c;
+    if (unsettled) add(`lkunsettled:${unsettled}`, 'warn', `${unsettled} locker${unsettled > 1 ? 's' : ''} returned but still unpaid`, '/lockers');
+    const settling = db.prepare("SELECT COUNT(*) AS c FROM day_tour_groups WHERE group_status = 'Settling'").get().c;
+    if (settling) add(`settling:${settling}`, 'info', `${settling} Day Tour group${settling > 1 ? 's' : ''} settling`, '/daytour');
+  }
+  if (can(req.user, 'housekeeping')) {
+    const urgent = db.prepare(`SELECT DISTINCT rm.room_no FROM rooms rm JOIN reservation_room_lines l ON l.room_id = rm.id JOIN reservations r ON r.id = l.reservation_id
+        WHERE l.line_status = 'Active' AND r.check_in <= ? AND rm.hk_status != 'Clean'`).all(t).map((x) => x.room_no);
+    if (urgent.length) add(`hkurgent:${urgent.join(',')}`, 'warn', `Arriving guests need room${urgent.length > 1 ? 's' : ''} ${urgent.join(', ')} cleaned`, '/rooms');
+  }
+  if (can(req.user, 'hk.supervise')) {
+    const insp = db.prepare("SELECT COUNT(*) AS c FROM rooms WHERE hk_status = 'For Inspection' AND active = 1").get().c;
+    if (insp) add(`insp:${insp}`, 'info', `${insp} room${insp > 1 ? 's' : ''} waiting for inspection`, '/rooms');
+  }
+  res.json({ alerts: out });
 });

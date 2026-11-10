@@ -382,3 +382,18 @@ test('A3: suggest other dates when a category is full', async () => {
   assert.ok(s.length > 0);
   assert.ok(s.every((x) => x.from !== a && x.free > 0));
 });
+
+test('notifications: role-based alerts', async () => {
+  const sup = ok(await call('GET', '/reports/alerts', null, 'fosup')).alerts;
+  assert.ok(Array.isArray(sup));
+  const hk = ok(await call('GET', '/reports/alerts', null, 'hk')).alerts;
+  assert.ok(!hk.some((a) => a.key.startsWith('approvals:')), 'housekeeping does not see approval alerts');
+  // A waiting guest whose room becomes ready shows up for Front Office
+  const room = await roomId('DX206');
+  const r = ok(await call('POST', '/reservations', { guest: { full_name: 'Waiting, Guest', contact_no: '1' }, source: 'Walk-in', check_in: T, check_out: addDays(T, 1), lines: [{ room_id: room, adults: 1 }] }));
+  ok(await call('POST', `/rooms/${room}/hk-status`, { to: 'Dirty' }, 'hk'));
+  ok(await call('POST', `/reservations/${r.reservation.id}/lines/${r.lines[0].id}/arrived`, {}));
+  assert.ok(ok(await call('GET', '/reports/alerts', null, 'hk')).alerts.some((a) => a.key.startsWith('hkurgent:') && a.text.includes('DX206')));
+  ok(await call('POST', `/rooms/${room}/hk-status`, { to: 'Clean' }, 'hk'));
+  assert.ok(ok(await call('GET', '/reports/alerts')).alerts.some((a) => a.key === `ready:${r.lines[0].id}`));
+});

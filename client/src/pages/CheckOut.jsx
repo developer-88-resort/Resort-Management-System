@@ -1,6 +1,7 @@
 // Check-out (Part 1, s5.2): review all department charges, inspection, collect final balance, close folio. Room becomes Dirty.
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { askConfirm } from '../components/notify.jsx';
 import { api } from '../api.js';
 import { ApprovalFields, Check, ErrorBox, Field, Modal, Panel, TenderEntry, useAction, useLoad } from '../components/ui.jsx';
 import { fmtDate, fmtTime, peso } from '../util.js';
@@ -67,6 +68,7 @@ export default function CheckOut() {
         <span className="sp" />
         {d.totals.outstanding > 0 && <button className="btn sm outline" onClick={() => setExc({ reason: '', approval: {}, editing: true })}>Balance exception…</button>}
         <button className={`btn gold ${can ? '' : 'locked'}`} disabled={!can || a.busy} onClick={() => a.run(async () => {
+          if (!(await askConfirm({ title: 'Confirm Check-out', confirmLabel: 'Confirm Check-out', message: `Check out ${inHouse.filter((l) => selected.includes(l.id)).map((l) => l.room_no).join(', ')}? The room(s) will be set to Dirty for Housekeeping.` }))) return;
           const res = await api.post(`/reservations/${id}/checkout`, { line_ids: selected, inspection_note: note, exception: exc?.reason ? { reason: exc.reason, approval: exc.approval } : undefined });
           setD(res); setSel(null); setExc(null);
         })}>Confirm Check-out ({selected.length})</button>
