@@ -9,7 +9,7 @@ export function toast(message, type = 'success', details) {
   window.dispatchEvent(new CustomEvent('irms:toast', { detail: { message, type, details } }));
 }
 
-export function Toaster() {
+export function Toaster({ placement = 'corner' }) {
   const [items, setItems] = useState([]);
   useEffect(() => {
     let n = 0;
@@ -22,7 +22,7 @@ export function Toaster() {
     return () => window.removeEventListener('irms:toast', on);
   }, []);
   return (
-    <div className="toasts noprint" role="status" aria-live="polite">
+    <div className={`toasts noprint ${placement}`} role="status" aria-live="polite">
       {items.map((t) => (
         <div key={t.id} className={`toast ${t.type}`} onClick={() => setItems((x) => x.filter((i) => i.id !== t.id))}>
           <span className="toast-icon" aria-hidden="true">{t.type === 'error' ? '!' : t.type === 'info' ? 'i' : '✓'}</span>

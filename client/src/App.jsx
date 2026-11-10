@@ -139,9 +139,9 @@ function Shell({ children }) {
 
 export default function App() {
   const { loading, user } = useAuth();
-  if (loading) return <><Toaster /><ConfirmHost /><div style={{ padding: 40 }}>Loading…</div></>;
+  if (loading) return <><Toaster placement="center" /><ConfirmHost /><div style={{ padding: 40 }}>Loading…</div></>;
   // Toaster and ConfirmHost stay mounted across sign-in and sign-out so those messages are seen.
-  if (!user) return <><Toaster /><ConfirmHost /><Login /></>;
+  if (!user) return <><Toaster placement="center" /><ConfirmHost /><Login /></>;
   return (
     <><Toaster /><ConfirmHost /><Shell>
       <Routes>
