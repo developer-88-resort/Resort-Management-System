@@ -3,6 +3,7 @@ import { api } from './api.js';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
 import { ErrorBox, Field } from './components/ui.jsx';
+import SignInLayout from './components/SignInLayout.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Reservations from './pages/Reservations.jsx';
 import FollowUp from './pages/FollowUp.jsx';
@@ -73,20 +74,17 @@ function Login() {
     try { await login(u, p); } catch (x) { setErr(x); } finally { setBusy(false); }
   };
   return (
-    <div className="login">
+    <SignInLayout>
       <form className="card" onSubmit={submit}>
-        <div className="top">
-          <div style={{ color: 'var(--gold)', letterSpacing: '.22em', fontSize: 11, fontWeight: 700 }}>88 HOTSPRING RESORT</div>
-          <div style={{ fontSize: 22, fontWeight: 700, marginTop: 6 }}>Integrated Resort Management System</div>
-        </div>
+        <div className="signin-form-heading"><span className="signin-form-icon" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="10" width="14" height="11" rx="3" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></svg></span><h1>Sign in</h1></div>
         <div className="stack" style={{ padding: 24 }}>
-          <Field label="Username"><input value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username" /></Field>
-          <Field label="Password"><input type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></Field>
+          <Field label="Username"><input placeholder="Enter your username" value={u} onChange={(e) => setU(e.target.value)} autoFocus autoComplete="username" /></Field>
+          <Field label="Password"><input type="password" placeholder="Enter your password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></Field>
           <ErrorBox error={err} />
-          <button className="btn gold" disabled={busy}>Sign in</button>
+          <button className="btn gold" disabled={busy}>{busy ? 'Signing in...' : 'Sign in'}<span aria-hidden="true">&rarr;</span></button>
         </div>
       </form>
-    </div>
+    </SignInLayout>
   );
 }
 

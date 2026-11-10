@@ -1220,3 +1220,58 @@ button { font: inherit; cursor: pointer; }
   .reports-workspace .report-grid .panel { margin-bottom: 16px; }
   .reports-workspace .report-current-heading { margin: 16px 0; }
 }
+
+/* Staff sign-in: resort illustration and a focused form. */
+@media screen {
+  .login { min-height: 100vh; min-height: 100dvh; padding: 48px 28px; background: #f2f4ef; display: grid; place-items: center; }
+  .signin-shell { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); width: min(1080px, 100%); min-height: 650px; border: 1px solid #e0e6dc; border-radius: 24px; background: #fff; overflow: hidden; box-shadow: 0 20px 75px #344f3b0b; }
+  .signin-resort { position: relative; background: #e9efe5; overflow: hidden; min-height: 650px; border-right: 1px solid #e4e9df; }
+  .signin-brand { position: absolute; top: 38px; left: 36px; right: 25px; display: flex; align-items: center; gap: 14px; z-index: 1; }
+  .signin-monogram { display: grid; place-items: center; flex: none; width: 45px; height: 49px; border: 1px solid #c9b178; border-radius: 12px 12px 17px 17px; background: #f6f0df; color: #8b6b2e; font: 29px Georgia, serif; }
+  .signin-brand strong { display: block; font-size: 16px; font-weight: 650; letter-spacing: -.2px; color: #365c50; }
+  .signin-brand div > span { display: block; font-size: 10px; color: #61796b; margin-top: 4px; }
+  .signin-landscape { display: block; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+  .signin-form-area { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 65px 54px; background: #fff; }
+  .login .card { background: transparent; width: 100%; max-width: 340px; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+  .signin-form-heading { margin-bottom: 32px; }
+  .signin-form-icon { display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid #dceae2; background: #f1f7f3; color: #618775; border-radius: 13px; margin-bottom: 23px; }
+  .signin-form-heading h1 { color: #263e35; font-size: 31px; letter-spacing: -.9px; font-weight: 650; line-height: 1.3; }
+  .login .card > .stack { padding: 0 !important; gap: 23px; }
+  .login .field { gap: 9px; }
+  .login .field > span { color: #607168; font-size: 12px; font-weight: 500; }
+  .login input { background: #fcfdfb; min-height: 49px; border: 1px solid #dce3db; border-radius: 9px; color: #334a3f; padding: 13px 14px; font-size: 13px; }
+  .login input::placeholder { color: #929f95; font-size: 12px; }
+  .login input:focus { border-color: #6d9a89; box-shadow: 0 0 0 3px #148a8010; }
+  .login .card .btn.gold { min-height: 49px; padding: 13px 17px; border-radius: 9px; border-color: #d4a64a; background: #d4a64a; color: var(--navy); font-size: 13px; font-weight: 650; box-shadow: 0 3px 8px #b18c3512; margin-top: 6px; }
+  .login .card .btn.gold > span { position: absolute; right: 17px; font-size: 19px; font-weight: 400; line-height: 1; }
+  .login .card .btn.gold { position: relative; }
+  .login .card .btn.gold:disabled { background: var(--gold-soft); border: 2px dashed var(--gold); color: #80632c; box-shadow: none; }
+  .login .err { font-size: 12px; line-height: 1.7; }
+  .signin-footer { position: absolute; bottom: 28px; left: 24px; right: 24px; text-align: center; color: #738478; font-size: 10px; }
+}
+@media screen and (max-width: 1000px) {
+  .signin-shell { min-height: 600px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .signin-resort { min-height: 600px; }
+  .signin-form-area { padding: 55px 35px; }
+  .signin-brand { left: 25px; top: 30px; gap: 11px; }
+  .signin-brand strong { font-size: 14px; }
+  .signin-brand div > span { max-width: 190px; font-size: 9px; line-height: 1.7; }
+}
+@media screen and (max-width: 680px) {
+  .login { padding: 25px 18px; }
+  .signin-shell { grid-template-columns: 1fr; border-radius: 19px; max-width: 440px; min-height: 0; }
+  .signin-resort { min-height: 145px; border-right: 0; border-bottom: 1px solid #dce5d9; }
+  .signin-landscape { width: 240px; height: 264px; left: auto; right: -65px; bottom: -140px; opacity: .35; }
+  .signin-brand { top: 43px; left: 26px; }
+  .signin-brand strong { font-size: 16px; }
+  .signin-brand div > span { max-width: none; font-size: 9px; }
+  .signin-form-area { padding: 34px 28px 68px; }
+  .signin-form-icon { display: none; }
+  .signin-form-heading { margin-bottom: 25px; }
+  .signin-form-heading h1 { font-size: 27px; }
+  .signin-footer { bottom: 24px; }
+}
+@media screen and (max-height: 760px) and (min-width: 681px) {
+  .login { padding: 25px; }
+  .signin-shell, .signin-resort { min-height: 560px; }
+}
