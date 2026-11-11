@@ -55,4 +55,4 @@ Then open every page in the sidebar and check that nothing is broken. Check thes
 - Department Sales & Charges
 - Receipt printing
 
-Commit on a separate branch (e.g. `design/redesign`), not on `main`.
+Commit on a separate branch, not on `main`.
