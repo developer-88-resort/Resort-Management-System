@@ -1311,3 +1311,23 @@ button { font: inherit; cursor: pointer; }
 /* Sign-in page: notice shown inside the card, in the same style family as the error box. */
 .signin-notice { border-left: 4px solid var(--teal); background: var(--teal-soft); color: #1d4f4a; padding: 10px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; }
 .signin-notice.error { border-left-color: var(--amber); background: var(--gold-soft); color: #7a5410; }
+
+/* Dashboard shortcuts: consistent hit areas, semantic icons and quiet depth. */
+@media screen {
+  .dashboard-quick-actions { gap: 13px; }
+  .dashboard-quick-actions .dashboard-action { min-height: 52px; padding: 9px 15px 9px 11px; gap: 12px; border-radius: 13px; font-size: 13px; font-weight: 600; letter-spacing: -.1px; filter: none; transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease; }
+  .dashboard-quick-actions .dashboard-action.gold { background: #dfb65f; border: 1px solid #cfa34c; color: #24384b; box-shadow: inset 0 1px 0 #ffffff3d, 0 3px 7px #a9812420; }
+  .dashboard-action-icon { display: grid; place-items: center; width: 31px; height: 31px; flex: none; border-radius: 9px; background: #ffffff30; color: #675021; }
+  .dashboard-action-arrow { display: flex; align-items: center; margin-left: 6px; color: inherit; opacity: .65; }
+  .dashboard-quick-actions .dashboard-action.outline { background: #fff; color: #196e64; border: 1px solid #c6dcd5; box-shadow: 0 2px 5px #172b4905; }
+  .dashboard-action.outline .dashboard-action-icon { background: #edf6f1; color: #408875; }
+  .dashboard-quick-actions .dashboard-action.gold:hover { background: #e6c177; border-color: #c79a40; box-shadow: inset 0 1px 0 #ffffff55, 0 4px 10px #a9812426; }
+  .dashboard-quick-actions .dashboard-action.outline:hover { background: #f7fbf9; border-color: #80b6a6; box-shadow: 0 3px 8px #172b4909; }
+  .dashboard-quick-actions .dashboard-action:active { box-shadow: inset 0 1px 3px #172b4914; }
+  .dashboard-quick-actions .dashboard-action:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+}
+@media screen and (max-width: 480px) {
+  .dashboard-quick-actions { align-items: stretch; }
+  .dashboard-quick-actions .dashboard-action { width: 100%; justify-content: flex-start; }
+  .dashboard-action-arrow { margin-left: auto; }
+}

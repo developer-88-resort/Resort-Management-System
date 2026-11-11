@@ -17,8 +17,8 @@ export default function Dashboard() {
         <span className="sp" /><div className="date-chip"><Icon name="calendar" size={17} />{fmtDate(d.today)}</div>
       </div>
       <div className="row dashboard-quick-actions">
-            {can('reservation.edit') && <Link className="btn gold" to="/reservations/new">New reservation <Icon name="arrow" size={16} /></Link>}
-            {can('daytour') && <Link className="btn outline" to="/daytour/new">New Day Tour group <Icon name="arrow" size={16} /></Link>}
+            {can('reservation.edit') && <Link className="btn gold dashboard-action" to="/reservations/new"><span className="dashboard-action-icon"><Icon name="calendar" size={19} /></span><span>New reservation</span><span className="dashboard-action-arrow"><Icon name="arrow" size={16} /></span></Link>}
+            {can('daytour') && <Link className="btn outline dashboard-action" to="/daytour/new"><span className="dashboard-action-icon"><Icon name="people" size={19} /></span><span>New Day Tour group</span><span className="dashboard-action-arrow"><Icon name="arrow" size={16} /></span></Link>}
       </div>
       <div className="section-label"><h2>Today's activity</h2></div>
       <div className="grid g4 metrics-primary">
