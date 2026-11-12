@@ -71,7 +71,7 @@ export default function Reservations({ view }) {
           <div className="booking-illustration" aria-hidden="true"><span className="illustration-orbit" /><div className="illustration-calendar"><div className="illustration-calendar-top"><i /><i /></div><div className="illustration-calendar-grid">{Array.from({ length: 9 }, (_, i) => <span key={i} />)}</div></div><span className="illustration-search"><Icon name={filtered ? 'search' : 'calendar'} size={24} /></span></div>
           <h2>{filtered ? 'No matching reservations' : filter === 'inhouse' ? 'No guests in-house' : filter === 'pending' ? 'No guests waiting for a room' : 'No reservations found'}</h2>
           {filtered && <p>Try a different name, status or arrival date.</p>}
-          {filtered ? <button type="button" className="btn outline" onClick={() => { setQ(''); setStatus(''); setArrival(''); }}>Clear filters</button> : can('reservation.edit') && <Link className="btn outline" to="/reservations/new"><Icon name="plus" size={16} />Create a reservation</Link>}
+          {filtered ? <button type="button" className="btn outline" onClick={() => { setQ(''); setStatus(''); setArrival(''); }}>Clear filters</button> : can('reservation.edit') && <Link className="btn outline panel-shortcut" to="/reservations/new"><Icon name="calendar" size={18} /><span>Create a reservation</span></Link>}
         </div>}
         <div className="register-footer"><span>{data ? data.reservations.length : '-'} reservation{data?.reservations.length === 1 ? '' : 's'} in this view</span></div>
       </section>
