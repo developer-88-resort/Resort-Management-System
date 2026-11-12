@@ -1,3 +1,4 @@
+import { Icon } from '../components/Design.jsx';
 // Official settlement receipt (Part 2, Fig. 6 left). 80 mm thermal. Business identity from BIR settings (OD-13).
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -22,7 +23,7 @@ export default function Receipt() {
   return (
     <div className="stack">
       <div className="row noprint">
-        {r && <button className="btn gold" onClick={print}>{r.last_printed_at ? 'Reprint receipt' : 'Print receipt'}</button>}
+        {r && <button className="btn gold" onClick={print}><Icon name="print" size={16} />{r.last_printed_at ? 'Reprint receipt' : 'Print receipt'}</button>}
         {d.account && <Link className="btn outline" to={d.account.link}>Back to {d.account.ref}</Link>}
         <span className="small muted">Reprints print the word REPRINT and are logged. Printed {r?.reprint_count ? `${r.reprint_count + 1} times` : r?.last_printed_at ? 'once' : 'not yet'}.</span>
       </div>

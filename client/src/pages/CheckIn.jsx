@@ -1,3 +1,4 @@
+import { Icon } from '../components/Design.jsx';
 // Room check-in (Part 2, Fig. 1): several rooms, per-room readiness, registration, split-tender payment, 4-item gate.
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -163,7 +164,7 @@ export default function CheckIn() {
             </button>
             <div className="hr" />
             <div className="row">
-              <Link className="btn outline" to={`/reservations/${id}/registration`} target="_blank">Print Registration Form</Link>
+              <Link className="btn outline" to={`/reservations/${id}/registration`} target="_blank"><Icon name="print" size={16} />Print Registration Form</Link>
             </div>
             <div className="small muted">Signed copy covers room(s) <Open id="RM-03">per room or per guest: TO CONFIRM</Open></div>
             <div className="row">{pending.map((l) => (

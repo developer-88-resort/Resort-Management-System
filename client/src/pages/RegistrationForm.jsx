@@ -1,3 +1,4 @@
+import { Icon } from '../components/Design.jsx';
 // Printable guest registration form (signed at check-in). Layout PROPOSED; one per reservation or per room is RM-03.
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
@@ -15,7 +16,7 @@ export default function RegistrationForm() {
   const cell = { border: '1px solid #000', padding: '6px 8px', verticalAlign: 'top' };
   return (
     <div>
-      <div className="row noprint" style={{ marginBottom: 12 }}><button className="btn gold" onClick={() => window.print()}>Print</button><span className="muted small">A4. Guest signs; attach the signed copy at check-in.</span></div>
+      <div className="row noprint" style={{ marginBottom: 12 }}><button className="btn gold" onClick={() => window.print()}><Icon name="print" size={16} />Print</button><span className="muted small">A4. Guest signs; attach the signed copy at check-in.</span></div>
       <div className="printpage panel" style={{ maxWidth: '210mm', padding: '14mm', color: '#000', fontSize: 13 }}>
         <div style={{ textAlign: 'center', marginBottom: 10 }}>
           <div style={{ fontWeight: 700, fontSize: 18 }}>{settings.business_name}</div>

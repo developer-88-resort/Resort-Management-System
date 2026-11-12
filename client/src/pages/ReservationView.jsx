@@ -1,3 +1,4 @@
+import { Icon } from '../components/Design.jsx';
 // Reservation detail: room lines, folio, payments, history, and every action on the booking.
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -87,7 +88,7 @@ export default function ReservationView() {
         {FD && open && <button className="btn outline" onClick={() => setModal('charge')}>Add charge</button>}
         {FD && open && <button className="btn outline" onClick={() => setModal('discount')}>Add approved discount</button>}
         {FD && r.reservation_status !== 'Cancelled' && d.totals.outstanding < 0 && <button className="btn gold" onClick={() => setModal('credit')}>Return credit {peso(-d.totals.outstanding)}</button>}
-        {FD && <Link className="btn outline" to={`/reservations/${id}/registration`}>Print registration form</Link>}
+        {FD && <Link className="btn outline" to={`/reservations/${id}/registration`}><Icon name="print" size={16} />Print registration form</Link>}
         <span style={{ flex: 1 }} />
         {can('reservation.edit') && active && !anyIn && <button className="btn danger" onClick={() => setModal('cancel')}>Cancel Reservation</button>}
         {FD && r.reservation_status === 'Cancelled' && !r.refund_decision && <button className="btn" onClick={() => setModal('refund')}>Refund decision</button>}
@@ -186,7 +187,7 @@ export default function ReservationView() {
         </ReasonModal>
       )}
       {modal?.paid && (
-        <Modal title="Payment recorded" onClose={() => setModal(null)} footer={<><button className="btn outline" onClick={() => setModal(null)}>Close</button><Link className="btn gold" to={`/receipt/${modal.paid.id}`}>Print receipt</Link></>}>
+        <Modal title="Payment recorded" onClose={() => setModal(null)} footer={<><button className="btn outline" onClick={() => setModal(null)}>Close</button><Link className="btn gold" to={`/receipt/${modal.paid.id}`}><Icon name="print" size={16} />Print receipt</Link></>}>
           <div className="okmsg">{modal.paid.payment_no} for {peso(modal.paid.total)} recorded. {modal.paid.receipt?.doc_type} {modal.paid.receipt?.receipt_no} issued.</div>
         </Modal>
       )}

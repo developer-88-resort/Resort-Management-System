@@ -1,3 +1,4 @@
+import { Icon } from '../components/Design.jsx';
 // Daily reconciliation during parallel running (Part 1 Fixed decision 9; Part 3 s5 phase 4).
 // IRMS figures come from source transactions. Type the matching figure from the old system / department POS,
 // explain every variance, and save the signed-off sheet.
@@ -24,7 +25,7 @@ export default function Reconciliation() {
       <div className="pagehead">
         <h1>Daily Reconciliation</h1>
         <Field label=""><input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
-        <span className="sp" /><button className="btn outline" onClick={() => window.print()}>Print</button>
+        <span className="sp" /><button className="btn outline" onClick={() => window.print()}><Icon name="print" size={16} />Print</button>
       </div>
       <div className="note">During any parallel period each transaction type has one system of record, and nothing is recorded in both. Compare IRMS with the old system (WinCloud) and each department POS every day. A variance needs a note.</div>
       <ErrorBox error={err || a.error} />

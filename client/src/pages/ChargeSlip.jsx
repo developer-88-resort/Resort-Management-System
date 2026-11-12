@@ -1,3 +1,4 @@
+import { Icon } from '../components/Design.jsx';
 // Department charge slip (Part 2, Fig. 6 right) - NOT an official receipt. 80 mm thermal, ~42 chars/line.
 import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
@@ -16,7 +17,7 @@ export default function ChargeSlip() {
   const charge = t.method === 'charge';
   return (
     <div className="stack">
-      <div className="row noprint"><button className="btn gold" onClick={() => window.print()}>Print slip</button><Link className="btn outline" to="/department">Back</Link>
+      <div className="row noprint"><button className="btn gold" onClick={() => window.print()}><Icon name="print" size={16} />Print slip</button><Link className="btn outline" to="/department">Back</Link>
         <span className="small muted">Assumed 80 mm thermal paper. Printer model and command set: TO CONFIRM.</span></div>
       {d.transaction.method === 'charge' && (
         <div className="row noprint">
