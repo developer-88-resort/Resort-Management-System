@@ -1,6 +1,7 @@
 /** Decorative icons and summaries only; no workflow or permission logic. */
 export function Icon({ name = 'calendar', size = 20 }) {
   const paths = {
+    rateTag: <><path d="M3 3h9l9 9-9 9-9-9z" /><circle cx="7.5" cy="7.5" r="1" /><path d="m11 10 5 5M14 9l3 3M10 14l3 3" /></>,
     categories: <><path d="m12 3 9 5-9 5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5" /></>,
     itemList: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M7 8h.01M10 8h7M7 12h.01M10 12h7M7 16h.01M10 16h5" /></>,
     userProfile: <><circle cx="12" cy="7" r="3.5" /><path d="M5 21v-2a7 7 0 0 1 14 0v2" /></>,

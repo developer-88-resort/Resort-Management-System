@@ -114,7 +114,7 @@ export function AdminRates() {
   return (
     <div className="stack">
       <div className="pagehead"><h1>Day Tour Rates</h1><span className="sp" />
-        <button className="btn gold" onClick={() => setF({ code: '', name: '', kind: 'guest', counts_as_person: true, amount: '', effective_date: localToday(), reason: '', approver: '' })}>+ New rate item</button></div>
+        <button type="button" className="btn gold reservation-action" onClick={() => setF({ code: '', name: '', kind: 'guest', counts_as_person: true, amount: '', effective_date: localToday(), reason: '', approver: '' })}><ReservationActionLabel icon="rateTag">New rate item</ReservationActionLabel></button></div>
       <div className="note">Rates come from this configured table with effective date, reason and approver. Nothing is hard-coded. A change is a new version; history is kept. Final rates, tax treatment and packages: <Open id="OD-06" />. Seeded values are SAMPLE DATA.</div>
       <Panel title="Current rates (today)">
         <table className="tbl"><thead><tr><th>Code</th><th>Item</th><th>Kind</th><th>Counted as guest</th><th className="right">Amount</th><th>Effective</th><th>Approved by</th><th /></tr></thead>
