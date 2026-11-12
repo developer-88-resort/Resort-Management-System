@@ -32,6 +32,6 @@ export function EmptyState({ icon, title, detail }) {
 }
 
 /** Shared visual label; the parent keeps its route and permission checks. */
-export function ReservationActionLabel() {
-  return <><span className="reservation-action-icon"><Icon name="calendarAdd" size={19} /></span><span>New Reservation</span><span className="reservation-action-arrow"><Icon name="arrow" size={16} /></span></>;
+export function ReservationActionLabel({ icon = 'calendarAdd', children = 'New Reservation' }) {
+  return <><span className="reservation-action-icon"><Icon name={icon} size={19} /></span><span>{children}</span><span className="reservation-action-arrow"><Icon name="arrow" size={16} /></span></>;
 }

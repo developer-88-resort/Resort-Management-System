@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import { Badge, ErrorBox, Field, useLoad } from '../components/ui.jsx';
+import { ReservationActionLabel } from '../components/Design.jsx';
 import { fmtDate, peso } from '../util.js';
 
 export default function DayTourList() {
@@ -17,7 +18,7 @@ export default function DayTourList() {
   const [d, , err] = useLoad(`/daytour/groups?${p}`);
   return (
     <div className="stack">
-      <div className="pagehead"><h1>Day Tour Groups</h1><span className="sp" />{can('daytour') && <Link className="btn gold" to="/daytour/new">+ Walk-in / Advance Booking</Link>}</div>
+      <div className="pagehead"><h1>Day Tour Groups</h1><span className="sp" />{can('daytour') && <Link className="btn gold reservation-action" to="/daytour/new"><ReservationActionLabel icon="people">Walk-in / Advance Booking</ReservationActionLabel></Link>}</div>
       <div className="panel grid g3">
         <Field label="Search name, reference, contact"><input value={q} onChange={(e) => setQ(e.target.value)} /></Field>
         <Field label="Status"><select value={status} onChange={(e) => setStatus(e.target.value)}>
