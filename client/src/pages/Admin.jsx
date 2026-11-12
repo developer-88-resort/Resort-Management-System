@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { Badge, ErrorBox, Field, Modal, Open, Panel, useAction, useLoad } from '../components/ui.jsx';
-import { ReservationActionLabel } from '../components/Design.jsx';
+import { Icon, ReservationActionLabel } from '../components/Design.jsx';
 import { centsToInput, fmtDate, fmtDateTime, localToday, peso, toCents } from '../util.js';
 
 // ------------------------------------------------------------------ users
@@ -54,7 +54,7 @@ export function AdminRooms() {
     <div className="stack">
       <div className="pagehead"><h1>Rooms & Categories</h1><span className="sp" /><span className="muted small">Room inventory, categories and rates are TO CONFIRM (OD-05). Sample values are seeded.</span></div>
       <div className="grid g2">
-        <Panel title="Room categories" right={<button className="btn sm" onClick={() => setEditType({ name: '', rate_plan: 'Standard', rate_per_night: '', max_occupancy: '' })}>+ Category</button>}>
+        <Panel title="Room categories" right={<button type="button" className="btn sm category-create" onClick={() => setEditType({ name: '', rate_plan: 'Standard', rate_per_night: '', max_occupancy: '' })}><Icon name="categories" size={16} /><span>Category</span></button>}>
           <table className="tbl"><thead><tr><th>Category</th><th>Rate plan</th><th className="right">Rate / night</th><th className="right">Max</th><th>Status</th><th /></tr></thead>
             <tbody>{types?.types.map((t) => (
               <tr key={t.id}><td><b>{t.name}</b></td><td>{t.rate_plan}</td><td className="num">{peso(t.rate_per_night)}</td><td className="num">{t.max_occupancy ?? '-'}</td><td>{t.active ? 'Active' : 'Inactive'}</td>

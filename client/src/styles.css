@@ -1376,3 +1376,11 @@ select:not([multiple]):disabled {
   .reservation-empty .btn.outline.panel-shortcut { min-height: 43px; padding: 6px 16px 6px 7px; gap: 10px; font-size: 12px; }
   .reservation-empty .panel-shortcut > svg { width: 29px; height: 29px; padding: 6px; }
 }
+
+@media screen {
+  .btn.sm.category-create { min-height: 37px; padding: 4px 13px 4px 5px; gap: 8px; border-radius: 999px; background: var(--teal); border-color: #107b72; color: #fff; font-size: 11px; font-weight: 600; box-shadow: inset 0 1px 0 #ffffff20, 0 2px 5px #148a8017; filter: none; }
+  .category-create > svg { width: 26px; height: 26px; padding: 5px; flex: none; border-radius: 50%; background: #ffffff1f; color: #fff; }
+  .btn.sm.category-create:hover { background: #117b72; border-color: #0d6e65; box-shadow: 0 3px 7px #148a8026; }
+  .btn.sm.category-create:active { background: #106e66; box-shadow: inset 0 1px 3px #172b4920; }
+  .btn.sm.category-create:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+}
