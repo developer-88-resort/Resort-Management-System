@@ -1,3 +1,4 @@
+import { Icon } from '../components/Design.jsx';
 // Cutover opening records (Fixed decision 7, Part 3 s5). WinCloud history is NOT imported; live stays are entered by hand.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -123,7 +124,7 @@ function DayTourOpening() {
                 <td><button className="linkbtn red" onClick={() => setLockers(lockers.filter((_, j) => j !== i))}>remove</button></td>
               </tr>
             ))}</tbody></table>
-          <div><button className="btn sm outline" onClick={() => setLockers([...lockers, { locker_id: '', assignment_type: 'Individual', occupants: '', opening_balance: '' }])}>+ Add locker</button></div>
+          <div><button type="button" className="btn sm outline panel-shortcut" onClick={() => setLockers([...lockers, { locker_id: '', assignment_type: 'Individual', occupants: '', opening_balance: '' }])}><Icon name="locker" size={16} /><span>Add locker</span></button></div>
         </>)}
         <Field label="Remarks"><input value={f.remarks} onChange={(e) => setF({ ...f, remarks: e.target.value })} /></Field>
         <ErrorBox error={a.error} />
