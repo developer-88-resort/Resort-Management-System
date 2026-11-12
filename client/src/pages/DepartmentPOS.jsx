@@ -73,7 +73,7 @@ export default function DepartmentPOS() {
               <tr className="total department-total"><td colSpan={3}>Total</td><td className="num">{peso(total)}</td><td /></tr>
             </tbody>
           </table></div>
-          <button className="btn outline department-add-item" onClick={() => setItems([...items, { name: '', qty: 1, price: '' }])}>+ Add item</button>
+          <button type="button" className="btn outline department-add-item panel-shortcut" onClick={() => setItems([...items, { name: '', qty: 1, price: '' }])}><Icon name="itemList" size={16} /><span>Add item</span></button>
         </Panel>
         <Panel num={2} title="Payment" className="department-payment" right={<span className="department-payment-icon"><Icon name="wallet" size={19} /></span>}>
           <div className="stack" style={{ gap: 10 }}>
