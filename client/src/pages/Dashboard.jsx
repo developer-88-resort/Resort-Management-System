@@ -36,7 +36,7 @@ export default function Dashboard() {
 
       <div className="grid g2">
         {d.arrivals && (
-          <Panel title="Arrivals today" right={can('reservation.edit') && <Link className="btn sm outline" to="/reservations/new">+ New reservation</Link>}>
+          <Panel title="Arrivals today" right={can('reservation.edit') && <Link className="btn sm outline panel-shortcut" to="/reservations/new"><Icon name="calendar" size={16} /><span>New reservation</span></Link>}>
             <table className="tbl"><thead><tr><th>Ref</th><th>Guest</th><th>Status</th><th>Payment</th><th className="right">Balance</th><th /></tr></thead>
               <tbody>
                 {d.arrivals.map((a) => (
@@ -61,7 +61,7 @@ export default function Dashboard() {
           </Panel>
         )}
         {d.groups && (
-          <Panel title="Day Tour today" right={can('daytour') && <Link className="btn sm outline" to="/daytour/new">+ New group</Link>}>
+          <Panel title="Day Tour today" right={can('daytour') && <Link className="btn sm outline panel-shortcut" to="/daytour/new"><Icon name="people" size={16} /><span>New group</span></Link>}>
             <table className="tbl"><thead><tr><th>Group</th><th>Name</th><th>Status</th><th className="right">Guests</th><th className="right">Outstanding</th></tr></thead>
               <tbody>
                 {d.groups.map((g) => (
