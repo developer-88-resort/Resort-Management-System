@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { Badge, ErrorBox, Field, Modal, Open, Panel, useAction, useLoad } from '../components/ui.jsx';
+import { ReservationActionLabel } from '../components/Design.jsx';
 import { centsToInput, fmtDate, fmtDateTime, localToday, peso, toCents } from '../util.js';
 
 // ------------------------------------------------------------------ users
@@ -13,7 +14,7 @@ export function AdminUsers() {
   if (!d) return <p>Loading…</p>;
   return (
     <div className="stack">
-      <div className="pagehead"><h1>Users & Roles</h1><span className="sp" /><button className="btn gold" onClick={() => setEdit({ username: '', full_name: '', role: 'fo_cashier', password: '', active: true })}>+ New user</button></div>
+      <div className="pagehead"><h1>Users & Roles</h1><span className="sp" /><button type="button" className="btn gold reservation-action" onClick={() => setEdit({ username: '', full_name: '', role: 'fo_cashier', password: '', active: true })}><ReservationActionLabel icon="userProfile">New user</ReservationActionLabel></button></div>
       <div className="panel"><table className="tbl"><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Created</th><th /></tr></thead>
         <tbody>{d.users.map((u) => (
           <tr key={u.id}><td className="mono">{u.username}</td><td>{u.full_name}</td><td>{d.roles[u.role]}</td><td><Badge t={u.active ? 'green' : 'grey'}>{u.active ? 'Active' : 'Inactive'}</Badge></td>
