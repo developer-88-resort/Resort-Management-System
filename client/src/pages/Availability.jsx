@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ErrorBox, useLoad } from '../components/ui.jsx';
-import { Icon } from '../components/Design.jsx';
+import { Icon, ReservationActionLabel } from '../components/Design.jsx';
 import { addDays, fmtDate, localToday } from '../util.js';
 
 export default function Availability() {
@@ -15,7 +15,7 @@ export default function Availability() {
       <div className="pagehead availability-heading">
         <h1>Availability Calendar</h1>
         <span className="sp" />
-        <Link className="btn gold availability-create" to="/reservations/new"><Icon name="plus" size={18} />New Reservation</Link>
+        <Link className="btn gold availability-create reservation-action" to="/reservations/new"><ReservationActionLabel /></Link>
       </div>
       <ErrorBox error={err} />
       <section className="availability-planner" aria-label="Room availability planner">

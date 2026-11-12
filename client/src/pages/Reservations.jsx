@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import { Badge, ErrorBox, Field, useLoad } from '../components/ui.jsx';
-import { Icon } from '../components/Design.jsx';
+import { Icon, ReservationActionLabel } from '../components/Design.jsx';
 import { fmtDate, peso } from '../util.js';
 
 const STATUSES = ['', 'Active / Booked', 'Checked In', 'Checked Out', 'Cancelled'];
@@ -33,7 +33,7 @@ export default function Reservations({ view }) {
       <div className="pagehead reservations-heading">
         <h1>{title}</h1>
         <span className="sp" />
-        {can('reservation.edit') && <Link className="btn gold reservation-create" to="/reservations/new"><Icon name="plus" size={18} />New Reservation</Link>}
+        {can('reservation.edit') && <Link className="btn gold reservation-create reservation-action" to="/reservations/new"><ReservationActionLabel /></Link>}
       </div>
 
       <section className="reservation-register" aria-label="Reservation directory">
